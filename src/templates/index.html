@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col text-center">
+            <h2>Welcome to Solid Pod LG</h2>
+            {% if not request.user.is_authenticated %}
+                <br>
+                <p>You need to <a href="{% url "accounts:login" %}">log in</a> to access your data!</p>
+                <p>Need an account? Please <a href={% url 'accounts:register' %}>Register</a></p>
+                <br>
+{#                <a href="{% url 'oidc:connect' %}">>> Try simple lookup to a solid pod <<</a>#}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

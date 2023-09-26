@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <br>
+    <div class="row justify-content-md-center">
+        <div class="col-4">
+            {% if not request.user.is_authenticated %}
+                <form method='POST'>{% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary"> Register </button>
+                </form>
+                <br>
+                <p>Already have an account? Please <a href='{% url "accounts:login" %}'>Log in</a></p>
+            {% else %}
+                <p>You're already logged in and cannot register. Would you like to <a href='{% url "accounts:logout" %}'>log out</a>?</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

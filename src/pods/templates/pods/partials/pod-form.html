@@ -1,0 +1,38 @@
+{% if form_pod %}
+
+    {% if form_pod.errors %}
+        <div class="row justify-content-md-center">
+            <div class="col-md-12 alert alert-danger">
+                {{ form_pod.errors }}
+            </div>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="row justify-content-md-center">
+            <div class="form-group col-md-3 mb-0">
+                <div id="div_id_name" class="mb-3">
+                    <input type="text" name="name" maxlength="255" class="textinput form-control" required="" id="id_name" value="{{ form.data.name }}">
+                    <label for="id_name" class="form-label requiredField">Name<span class="asteriskField">*</span></label>
+                </div>
+            </div>
+            <div class="form-group col-md-8 mb-0">
+                <div id="div_id_url" class="mb-3">
+                    <input type="url" name="url" maxlength="200" class="urlinput form-control" required="" id="id_url" value="{{ form.data.url }}">
+                    <label for="id_url" class="form-label requiredField">URL<span class="asteriskField">*</span></label>
+                </div>
+            </div>
+            <div class="form-group col-md-1 mb-0">
+                <button
+                    hx-post="{% url 'pods:pods-htmx-api:create-pod' %}"
+                    hx-target="#solid-pod-form" class="btn btn-primary float-end">
+                    add
+                </button>
+            </div>
+        </div>
+    </form>
+
+{% endif %}
+
+{% include 'pods/partials/pods-list.html' %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'header.html' %}
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <main role="main">
+        <div class="container-fluid">
+            <br>
+            {% include 'messages_display.html' %}
+            {% include 'pod_login_status.html' %}
+            {% block content %}
+            {% endblock content %}
+            <br>
+
+        </div>
+    </main> <!-- /container -->
+    {% include 'footer.html' %}
+    {% include 'js.html' %}
+    {% block js %}{% endblock js %}
+</body>
+</html>

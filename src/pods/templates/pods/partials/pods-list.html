@@ -1,0 +1,54 @@
+{% if pods %}
+    <div class="table-responsive">
+        <table class="table" id="data_table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">URL</th>
+                    <th scope="col">Last viewed</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pods %}
+                    <tr>
+                        <td>
+                            {{ p.name }}
+                        </td>
+                        <td>
+                            {{ p.url }}
+                        </td>
+                        <td>
+{#                            {% localtime off %}#}
+{#                                {{ s.state.local_expires_at }}#}
+{#                            {% endlocaltime %}#}
+                        </td>
+                        <td>
+{#                            <button title="delete" hx-confirm="Are you sure?" cl#}
+{#                                hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"#}
+{#                                hx-target="#solid-pod-form" class="btn btn-primary btn-sm">#}
+{#                                <i class="fa-regular fa-trash-can"></i>#}
+{#                            </button>#}
+                            <a title="delete" hx-confirm="Are you sure?"
+                                hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"
+                                hx-target="#solid-pod-form" class="">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </a>
+                            {% if request.session.web_id %}
+                                <a href="{{ p.view_url }}" class="float-end" title="View">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+                            {% else %}
+                                <a href="#" class="float-end" title="View">
+                                    <i class="fa-solid fa-eye-slash"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>You don't have any Pods</p>
+{% endif %}

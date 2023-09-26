@@ -1,0 +1,10 @@
+<div class="row justify-content-md-center">
+    <div class="col col-sm-10">
+        <h3>Login status</h3>
+        {% if request.session.web_id %}
+            <p class="p-3 mb-2 bg-dark text-white">You are logged in as {{ request.session.web_id }}.</p>
+        {% else %}
+            <p class="p-3 mb-2 bg-light text-dark">You need to select a Web ID before viewing Solid pods.</p>
+        {% endif %}
+    </div>
+</div>

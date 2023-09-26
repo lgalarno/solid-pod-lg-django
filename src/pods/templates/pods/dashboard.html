@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block content %}
+    <br>
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10">
+             <h3 class="d-inline-block" >WebIDs</h3>
+            <button class="btn btn-primary btn-sm float-end"
+                    hx-get="{% url 'pods:pods_htmx-api:create-provider' %}"
+                    hx-target="#provider-form">
+                + add a WebID provider
+            </button>
+            <div id="provider-form">
+                {% include 'pods/partials/provider-form.html' %}
+            </div>
+            <br>
+            <br>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10">
+            <h3 class="d-inline-block">Pods</h3>
+            <button class="btn btn-primary btn-sm float-end"
+                    hx-get="{% url 'pods:pods-htmx-api:create-pod' %}"
+                    hx-target="#solid-pod-form">
+                + add a Pod
+            </button>
+            <br>
+            <br>
+            <div id="solid-pod-form">
+                {% include 'pods/partials/pod-form.html' %}
+            </div>
+            <br>
+            <br>
+            <hr>
+        </div>
+    </div>
+
+{#    #}
+{#    <div class="row justify-content-md-center">#}
+{#        <div class="col col-sm-10">#}
+{#            <h3>Sessions</h3>#}
+{#            {% if sessions %}#}
+{##}
+{#                <div class="table-responsive">#}
+{#                    <table class="table" id="data_table">#}
+{#                        <thead>#}
+{#                            <tr>#}
+{#                                <th scope="col">Issuer</th>#}
+{#                                <th scope="col">Web ID</th>#}
+{#                                <th scope="col">Pod</th>#}
+{#                                <th scope="col">Expiration</th>#}
+{#                                <th scope="col"></th>#}
+{#                            </tr>#}
+{#                        </thead>#}
+{#                        <tbody>#}
+{#                            {% for s in sessions %}#}
+{#                                <tr>#}
+{#                                    <td>#}
+{#                                        {{ s.provider.name }}#}
+{#                                    </td>#}
+{#                                    <td>#}
+{#                                        {{ s.webid.webid }}#}
+{#                                    </td>#}
+{#                                    <td>#}
+{#                                        {{ s.pod.name }}#}
+{#                                    </td>#}
+{#                                    <td>#}
+{#                                        {% localtime off %}#}
+{#                                            {{ s.state.local_expires_at }}#}
+{#                                        {% endlocaltime %}#}
+{#                                    </td>#}
+{#                                    <td>#}
+{#                                        <a href="{% url "pods:delete-session" s.pk %}" class="btn" title="delete" onclick="return confirm('Are you sure?')">#}
+{#                                            <i class="fa-regular fa-trash-can"></i>#}
+{#                                        </a>#}
+{#                                        <a href="{% url 'crud:view_resource' pk=s.pk %}" class="btn btn-primary btn-sm" title="Connect">#}
+{#                                            View#}
+{#                                        </a>#}
+{#                                    </td>#}
+{#                                </tr>#}
+{#                            {% endfor %}#}
+{#                        </tbody>#}
+{#                    </table>#}
+{#                </div>#}
+{#            {% else %}#}
+{#                <p>You don't have any active sessions</p>#}
+{#            {% endif %}#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}

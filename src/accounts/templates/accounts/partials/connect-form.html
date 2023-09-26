@@ -1,0 +1,8 @@
+<form action="{% url 'oidc:oidc-api:connect' %}" method="POST" id="form">
+    {% csrf_token %}
+    <label for="issuer_url" class="form-label">Your SOLID pod issuer URL</label>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="issuer_url" name="issuer_url" placeholder="https://solidcommunity.net/" value="{{ issuer_url }}" aria-label="Your SOLID pod issuer URL" aria-describedby="button-addon2" required>
+        <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>
+    </div>
+</form>
