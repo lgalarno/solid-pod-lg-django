@@ -1,34 +1,39 @@
-{% if sessions %}
-    {% for s in sessions %}
-        <form method="POST" action="{% url 'pods:connect-webid' %}" name="form_session">
-            {% csrf_token %}
-
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" value="{{ s.webid }}" aria-label="WebID" aria-describedby="button-addon2" readonly>
-                <input type="hidden" name="session_id" value="{{ s.pk }}"/>
-                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>
-            </div>
-
-        </form>
-    {% endfor %}
-{% else %}
-    <p>You don't have any Web IDs</p>
-{% endif %}
-
 {% if oidcps %}
-    <p>or</p>
     <form method="POST" action="{% url 'connector:connect' %}" name="form_oidcp">
         {% csrf_token %}
-        <div class="row justify-content-md-center">
-        <label for="oidc" class="form-label">Connect with a WebID provider</label>
-            <div class="input-group">
-                <select class="form-select" aria-label="Connect with an WebID provider" name="oidcp">
-                    {% for o in oidcps %}
-                        <option value="{{ o.pk }}">{{ o.url }}</option>
-                    {% endfor %}
-                </select>
+        <label for="oidcp" class="form-label">Using a WebID provider</label>
+        <div class="input-group">
+            <select class="form-select" aria-label="Connect with an WebID provider" name="oidcp">
+                {% for o in oidcps %}
+                    <option value="{{ o.pk }}">{{ o.url }}</option>
+                {% endfor %}
+            </select>
             <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>
-            </div>
         </div>
     </form>
+{% endif %}
+
+{% if sessions %}
+    <br>
+    <p>or</p>
+    <form method="POST" action="{% url 'connector:connect-webid' %}" name="form_session">
+        {% csrf_token %}
+{#            <input type="hidden" name="session_id" value="{{ s.pk }}"/>#}
+{#            <div class="input-group mb-3">#}
+{#                <input type="text" class="form-control" value="{{ s.webid }}" aria-label="WebID" aria-describedby="button-addon2" readonly>#}
+{#                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>#}
+{#            </div>#}
+        <label for="session_id" class="form-label">Using your WebID</label>
+        <div class="input-group">
+            <select class="form-select"aria-label="Connect with one of your WebID" name="session_id">
+                {% for s in sessions %}
+                    <option value="{{ s.pk }}">{{ s.webid }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>
+        </div>
+    </form>
+
+{% else %}
+    <p>You don't have any Web IDs</p>
 {% endif %}

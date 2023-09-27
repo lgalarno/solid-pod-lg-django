@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, HttpResponseRedirect, HttpResponse, reverse
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from datetime import datetime, timedelta
 
@@ -23,13 +24,22 @@ _CLIENT_URL = settings.CLIENT_URL
 
 # Create your views here.
 
+@require_http_methods(["POST"])
 def connect_webid(request):
-    print(request.POST)
     pk = request.POST.get('session_id')
     s = get_object_or_404(StateSession, pk=pk)
+    request = refresh_token(request=request, state_session=s)
+    t = str(request.session['web_id'])
+    if t.startswith('<html>'):
+        return HttpResponse(t)
+    return redirect('pods:dashboard')
 
-    return redirect(s.refresh_token_url)
-    # return HttpResponse(f'connect_webid {s.webid}')
+
+def disconnect_webid(request):
+    request.session['web_id'] = None
+    request.session['session_pk'] = None
+
+    return redirect('pods:dashboard')
 
 
 def connect_oidc(request):
@@ -77,12 +87,12 @@ def oauth_callback(request):
                              'DPoP':  make_token_for(keypair, provider_info['token_endpoint'], 'POST')
                          },
                          allow_redirects=False)
+    print(f'OAUTH resp code : {resp.status_code}')
 
-    result = resp.json()
-    print(f'OAUTH resp code : {resp.status_code }')
-    print(f"result: {result}")
     # update state_session
     if resp.status_code == 200:
+        result = resp.json()
+        print(f"result: {result}")
         # update state_session with tokens from the exchange
         at = result.get('access_token')
         web_id = get_web_id(at)
@@ -105,11 +115,19 @@ def oauth_callback(request):
         request.session['web_id'] = web_id
         request.session['session_pk'] = state_session.pk
     else:
-        name = result.get('name')
-        message = result.get('message')
-        description = result.get('error_description')
-        error = result.get('error')
-        messages.warning(request, f"Error: {error} {name} {message} {description}")
+        try:
+            # api response
+            result = resp.json()  # api response
+            name = result.get('name')
+            message = result.get('message')
+            description = result.get('error_description')
+            error = result.get('error')
+            request.session['web_id'] = None
+            request.session['session_pk'] = None
+            messages.error(request, f"Error: {error} {name} {message} {description}")
+        except:
+            # web server response
+            messages.error(request, resp.text)
     return HttpResponseRedirect(state_session.redirect_view)
 
 
@@ -139,9 +157,9 @@ def refresh_token(request, state_session):
                                  'DPoP':  make_token_for( keypair, provider_info['token_endpoint'], 'POST')
                              },
                              allow_redirects=False)
-        result = resp.json()
         # update state_session
         if resp.status_code == 200:
+            result = resp.json()
             # update state_session with tokens from the exchange
             at = result.get('access_token')
             web_id = get_web_id(at)
@@ -158,13 +176,19 @@ def refresh_token(request, state_session):
             state_session.save()
             request.session['web_id'] = web_id
             request.session['session_pk'] = state_session.pk
-            print(web_id)
         else:
-            name = result.get('name')
-            message = result.get('message')
-            description = result.get('error_description')
-            error = result.get('error')
-            request.session['web_id'] = f"Error: {error} {name} {message} {description}"
-            messages.warning(request, f"Error: {error} {name} {message} {description}")
+            try:
+                # api response
+                result = resp.json()  # api response
+                name = result.get('name')
+                message = result.get('message')
+                description = result.get('error_description')
+                error = result.get('error')
+                request.session['web_id'] = None
+                request.session['session_pk'] = None
+                messages.error(request, f"Error: {error} {name} {message} {description}")
+            except:
+                # web server response
+                messages.error(request, resp.text)
 
     return request  # HttpResponseRedirect(state_session.redirect_view)

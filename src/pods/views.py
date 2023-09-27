@@ -58,6 +58,8 @@ def view_resource(request, pk):
     if lookup_url:
         print(lookup_url)
         request = refresh_token(request=request, state_session=state_session)
+
+
         headers = get_headers(access_token=state_session.access_token,
                               DPoP_key=state_session.DPoP_key,
                               lookup_url=lookup_url,

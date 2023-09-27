@@ -71,12 +71,10 @@ def make_token_for(keypair, uri, method):
 
 def get_web_id(access_token):
     decoded_access_token = jwcrypto.jwt.JWT(jwt=access_token)
-    # TODO: should we also verify the payload against the signature it has?
     print(json.loads(
         decoded_access_token.token.objects['payload']))
     web_id = json.loads(
         decoded_access_token.token.objects['payload'])['sub']
-    # TODO: if we pull the webid from here, it needs further validation.
     return web_id
 
 

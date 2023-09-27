@@ -7,7 +7,6 @@ from pods import views
 app_name = 'pods'
 
 urlpatterns = [
-    path('connect-webid/', views.connect_webid, name="connect-webid"),
     path('dashboard/', login_required(views.dashboard), name="dashboard"),
     path('view-resource/<int:pk>/', views.view_resource, name="view_resource"),
     path('create-resource/<int:pk>/', views.create_resource, name="create_resource"),
