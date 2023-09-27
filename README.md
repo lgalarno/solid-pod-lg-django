@@ -42,7 +42,7 @@ This is the repository for the Solid Pod LG
   - CLIENT_CONTACT
     - email address
   - CLIENT_URL
-    - '127.0.0.1:8000/'
+    - example: '127.0.0.1:8000/'
 
 ### Credit
 The project [solid-file-python/twonote](https://github.com/twonote/solid-file-python) was modified to be used as the crud api

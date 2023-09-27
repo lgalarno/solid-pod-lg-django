@@ -103,6 +103,7 @@ def oauth_callback(request):
         state_session.refresh_token = result.get('refresh_token')
         state_session.save()
         request.session['web_id'] = web_id
+        request.session['session_pk'] = state_session.pk
     else:
         name = result.get('name')
         message = result.get('message')
@@ -118,6 +119,7 @@ def refresh_token(request, state_session):
     if state_session.is_active:
         print('active')
         request.session['web_id'] = state_session.webid
+        request.session['session_pk'] = state_session.pk
     else:
         print('expired')
         provider_info = state_session.oicdp.provider_info
@@ -138,8 +140,6 @@ def refresh_token(request, state_session):
                              },
                              allow_redirects=False)
         result = resp.json()
-        print(f'OAUTH resp code : {resp.status_code }')
-        print(f"result: {result}")
         # update state_session
         if resp.status_code == 200:
             # update state_session with tokens from the exchange

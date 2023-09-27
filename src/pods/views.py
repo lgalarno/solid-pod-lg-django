@@ -13,6 +13,7 @@ from .models import OpenIDprovider,  SolidPod, StateSession
 # Create your views here.
 
 
+# TODO login with web id with select
 def dashboard(request):
     sessions = StateSession.objects.filter(user=request.user)  # contains WebID
     pods = SolidPod.objects.filter(user=request.user)
@@ -40,6 +41,7 @@ def view_resource(request, pk):
     print("view_resource")
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
+    print(state_session)
     pod = get_object_or_404(SolidPod, pk=pk)
     context = {
         'title': 'view_resource',
@@ -133,7 +135,7 @@ def create_resource(request, pk):
         if resp.status_code == 401:
             messages.warning(request,
                              f"Got 401 trying to post {new_resource_url} . You are not authorized to proceed.")
-        elif resp.status_code != 201:
+        elif resp.status_code != 201 and resp.status_code != 200:
             messages.warning(request, f"Error: {resp.status_code} {resp.text}")
         else:  # resp.status_code == 201:
             messages.success(request, f"{fn} uploaded to {lookup_url}")
@@ -166,9 +168,9 @@ def delete_resource(request, pk):
     if resp.status_code == 401:
         messages.warning(request,
                          f"Got 401 trying to access {lookup_url} . Please, log in to your pod provider before looking up for a resource")
-    elif resp.status_code != 205:  # reset content
+    elif resp.status_code != 205 and resp.status_code != 200:  # reset content
         messages.warning(request, f"Error: {resp.status_code} {resp.text}")
-    else:  # resp.status_code == 202
+    else:  # resp.status_code == 205
         messages.success(request, f"{lookup_url}  deleted.")
     read_url = reverse('pods:view_resource', kwargs={'pk': pk})
     return HttpResponseRedirect(f'{read_url}?url={redirect_url}')
