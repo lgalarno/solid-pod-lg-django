@@ -17,8 +17,6 @@ from .models import OpenIDprovider,  SolidPod, StateSession
 def dashboard(request):
     sessions = StateSession.objects.filter(user=request.user)  # contains WebID
     pods = SolidPod.objects.filter(user=request.user)
-    # for s in sessions:
-    #     print(s.webid)
     oidcps = OpenIDprovider.objects.all()
     context = {
         'title': 'dashboard',
@@ -39,9 +37,9 @@ def connect_webid(request):
 
 def view_resource(request, pk):
     print("view_resource")
+    resource_content = None
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
-    print(state_session)
     pod = get_object_or_404(SolidPod, pk=pk)
     context = {
         'title': 'view_resource',
@@ -57,8 +55,11 @@ def view_resource(request, pk):
 
     if lookup_url:
         print(lookup_url)
-        request = refresh_token(request=request, state_session=state_session)
+        # request = refresh_token(request=request, state_session=state_session)
 
+        if not state_session.is_active:
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:view_resource'))
+            return redirect(refresh_token_query)
 
         headers = get_headers(access_token=state_session.access_token,
                               DPoP_key=state_session.DPoP_key,
@@ -67,7 +68,7 @@ def view_resource(request, pk):
         api = SolidAPI(headers=headers)
         resp = api.get(url=lookup_url)
         # resp = requests.get(url=lookup_url, headers=headers)
-        resource_content = resp.text
+
         #print(resource_content)
         if resp.status_code == 401:
             messages.warning(request,
@@ -76,11 +77,12 @@ def view_resource(request, pk):
             messages.warning(request,
                              f"403 Forbidden. Insufficient rights to a resource to access {lookup_url}")
         elif resp.status_code != 200:
-            messages.warning(request, f"Error: {resp.status_code} {resp.text}")
+            messages.error(request, f"Error: {resp.status_code} {resp.text}")
         else:  # resp.status_code == 200
+            resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if content_type == 'text/turtle':
-                print( 'text/turtle')
+                print('text/turtle')
                 folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content)
                 folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
@@ -130,7 +132,11 @@ def create_resource(request, pk):
                               DPoP_key=state_session.DPoP_key,
                               lookup_url=lookup_url,
                               method='POST')
-        request = refresh_token(request=request, state_session=state_session)
+        # request = refresh_token(request=request, state_session=state_session)
+        if not state_session.is_active:
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:create_resource'))
+            return redirect(refresh_token_query)
+
         api = SolidAPI(headers=headers)
         resp = api.post_file(url=new_resource_url, content=data, content_type=request.FILES['to_pod'].content_type)  #, headers=headers)
         # resp = requests.post(new_resource_url, headers=headers, data=data)  # files=files)
@@ -163,7 +169,11 @@ def delete_resource(request, pk):
                           DPoP_key=state_session.DPoP_key,
                           lookup_url=lookup_url,
                           method='DELETE')
-    request = refresh_token(request=request, state_session=state_session)
+    # request = refresh_token(request=request, state_session=state_session)
+    if not state_session.is_active:
+        refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:delete_resource'))
+        return redirect(refresh_token_query)
+
     api = SolidAPI(headers=headers)
     resp = api.delete(url=lookup_url)  #, headers=headers)
 

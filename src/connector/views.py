@@ -27,12 +27,26 @@ _CLIENT_URL = settings.CLIENT_URL
 @require_http_methods(["POST"])
 def connect_webid(request):
     pk = request.POST.get('session_id')
-    s = get_object_or_404(StateSession, pk=pk)
-    request = refresh_token(request=request, state_session=s)
-    t = str(request.session['web_id'])
-    if t.startswith('<html>'):
-        return HttpResponse(t)
-    return redirect('pods:dashboard')
+    state_session = get_object_or_404(StateSession, pk=pk)
+    if state_session.is_active:
+        request.session['web_id'] = state_session.webid
+        request.session['session_pk'] = state_session.pk
+        return redirect('pods:dashboard')
+    else:
+        refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:dashboard'))
+        return redirect(refresh_token_query)
+
+    # redirect_view = reverse('pods:dashboard')
+    # refresh_token_view = reverse('connector:refesh-token')
+    # refresh_token_uri = f'{refresh_token_view}?session_pk={pk}&redirect_uri={redirect_view}'
+
+
+    # s = get_object_or_404(StateSession, pk=pk)
+    # request = refresh_token(request=request, state_session=s)
+    # t = str(request.session['web_id'])
+    # if t.startswith('<html>'):
+    #     return HttpResponse(t)
+    # return redirect('pods:dashboard')
 
 
 def disconnect_webid(request):
@@ -43,22 +57,29 @@ def disconnect_webid(request):
 
 
 def connect_oidc(request):
-    print(request.POST)
-    pk = request.POST.get('oidcp')
-    op = get_object_or_404(OpenIDprovider, pk=pk)
-    state = make_random_string()
-    print(reverse('pods:dashboard'))
-    state_session = StateSession(
-        state=state,
-        user=request.user,
-        redirect_view=reverse('pods:dashboard'),
-        oicdp=op
-    )
-    state_session.save()
+    if request.method == 'POST':
+        print('connect_oidc POST')
+        pk = request.POST.get('oidcp')
+
+        op = get_object_or_404(OpenIDprovider, pk=pk)
+        state = make_random_string()
+        print(reverse('pods:dashboard'))
+        state_session = StateSession(
+            state=state,
+            user=request.user,
+            redirect_view=reverse('pods:dashboard'),
+            oicdp=op
+        )
+        state_session.save()
+
+        authorization_endpoint = op.provider_info['authorization_endpoint']
+    elif request.method == 'GET':
+        print('connect_oidc GET')
+        pk = request.GET.get('session_pk')
+        state_session = get_object_or_404(StateSession, pk=pk)
+        authorization_endpoint = state_session.oicdp.provider_info['authorization_endpoint']
     query = client_registration(state_session=state_session)
-    print(query)
-    auth_query = op.provider_info['authorization_endpoint'] + query
-    print(auth_query)
+    auth_query = authorization_endpoint + query
     return redirect(auth_query)
 
 
@@ -97,12 +118,6 @@ def oauth_callback(request):
         at = result.get('access_token')
         web_id = get_web_id(at)
         print(f'web_id: {web_id}')
-        # w, created = WebID.objects.get_or_create(
-        #     webid=web_id,
-        #     provider=state_session.oicdp,
-        #     user=state_session.user
-        # )
-        # state_session.webid = get_web_id(at)
         state_session.access_token = at
         state_session.id_token = result.get('id_token')
         state_session.DPoP_key = keypair.export()
@@ -131,9 +146,13 @@ def oauth_callback(request):
     return HttpResponseRedirect(state_session.redirect_view)
 
 
-def refresh_token(request, state_session):
+# TODO return to view which called refresh token instead of request
+def refresh_token(request):
     print("refresh_token")
-    # state_session = get_object_or_404(StateSession, pk=pk)
+    session_pk = request.GET.get('session_pk')
+    redirect_uri = request.GET.get('redirect_uri')
+    print(redirect_uri)
+    state_session = get_object_or_404(StateSession, pk=session_pk)
     if state_session.is_active:
         print('active')
         request.session['web_id'] = state_session.webid
@@ -158,6 +177,8 @@ def refresh_token(request, state_session):
                              },
                              allow_redirects=False)
         # update state_session
+        print(resp.text)
+        print(resp.status_code)
         if resp.status_code == 200:
             result = resp.json()
             # update state_session with tokens from the exchange
@@ -180,6 +201,9 @@ def refresh_token(request, state_session):
             try:
                 # api response
                 result = resp.json()  # api response
+                if resp.status_code == 400 and result.get("error") == "invalid_grant":
+                    connect_url = reverse('connector:connect')
+                    return redirect(f'{connect_url}?session_pk={state_session.pk}')
                 name = result.get('name')
                 message = result.get('message')
                 description = result.get('error_description')
@@ -191,4 +215,4 @@ def refresh_token(request, state_session):
                 # web server response
                 messages.error(request, resp.text)
 
-    return request  # HttpResponseRedirect(state_session.redirect_view)
+    return redirect(redirect_uri)  # request
