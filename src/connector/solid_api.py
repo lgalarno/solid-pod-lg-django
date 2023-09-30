@@ -87,7 +87,7 @@ class SolidAPI:
         self.client = httpx.Client()
         self.headers = headers
 
-    def fetch(self, method, url, options: Dict = None) -> Response:
+    def _fetch(self, method, url, options: Dict = None) -> Response:
         if not options:
             options = {}
         if self.headers:

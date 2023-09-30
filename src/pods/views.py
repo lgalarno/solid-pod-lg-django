@@ -81,7 +81,7 @@ def view_resource(request, pk):
         else:  # resp.status_code == 200
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
-            if content_type == 'text/turtle':
+            if 'text/turtle' in content_type:
                 print('text/turtle')
                 folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content)
                 folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'

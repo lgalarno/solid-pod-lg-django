@@ -58,12 +58,10 @@ def disconnect_webid(request):
 
 def connect_oidc(request):
     if request.method == 'POST':
-        print('connect_oidc POST')
         pk = request.POST.get('oidcp')
 
         op = get_object_or_404(OpenIDprovider, pk=pk)
         state = make_random_string()
-        print(reverse('pods:dashboard'))
         state_session = StateSession(
             state=state,
             user=request.user,
@@ -74,7 +72,6 @@ def connect_oidc(request):
 
         authorization_endpoint = op.provider_info['authorization_endpoint']
     elif request.method == 'GET':
-        print('connect_oidc GET')
         pk = request.GET.get('session_pk')
         state_session = get_object_or_404(StateSession, pk=pk)
         authorization_endpoint = state_session.oicdp.provider_info['authorization_endpoint']
@@ -84,8 +81,6 @@ def connect_oidc(request):
 
 
 def oauth_callback(request):
-    print("oauth")
-    print(f'request.user: {request.user}')
     auth_code = request.GET.get('code', None)
     state = request.GET.get('state', None)
     state_session = get_object_or_404(StateSession, state=state)
@@ -108,12 +103,10 @@ def oauth_callback(request):
                              'DPoP':  make_token_for(keypair, provider_info['token_endpoint'], 'POST')
                          },
                          allow_redirects=False)
-    print(f'OAUTH resp code : {resp.status_code}')
 
     # update state_session
     if resp.status_code == 200:
         result = resp.json()
-        print(f"result: {result}")
         # update state_session with tokens from the exchange
         at = result.get('access_token')
         web_id = get_web_id(at)
@@ -147,17 +140,13 @@ def oauth_callback(request):
 
 
 def refresh_token(request):
-    print("refresh_token")
     session_pk = request.GET.get('session_pk')
     redirect_uri = request.GET.get('redirect_uri')
-    print(redirect_uri)
     state_session = get_object_or_404(StateSession, pk=session_pk)
     if state_session.is_active:
-        print('active')
         request.session['web_id'] = state_session.webid
         request.session['session_pk'] = state_session.pk
     else:
-        print('expired')
         provider_info = state_session.oicdp.provider_info
         # Generate a key-pair.
         keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
@@ -176,8 +165,6 @@ def refresh_token(request):
                              },
                              allow_redirects=False)
         # update state_session
-        print(resp.text)
-        print(resp.status_code)
         if resp.status_code == 200:
             result = resp.json()
             # update state_session with tokens from the exchange
