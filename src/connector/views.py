@@ -117,7 +117,6 @@ def oauth_callback(request):
         # update state_session with tokens from the exchange
         at = result.get('access_token')
         web_id = get_web_id(at)
-        print(f'web_id: {web_id}')
         state_session.access_token = at
         state_session.id_token = result.get('id_token')
         state_session.DPoP_key = keypair.export()
@@ -143,10 +142,10 @@ def oauth_callback(request):
         except:
             # web server response
             messages.error(request, resp.text)
+
     return HttpResponseRedirect(state_session.redirect_view)
 
 
-# TODO return to view which called refresh token instead of request
 def refresh_token(request):
     print("refresh_token")
     session_pk = request.GET.get('session_pk')
@@ -184,7 +183,6 @@ def refresh_token(request):
             # update state_session with tokens from the exchange
             at = result.get('access_token')
             web_id = get_web_id(at)
-            print(f'web_id: {web_id}')
 
             state_session.access_token = at
             state_session.id_token = result.get('id_token')

@@ -82,11 +82,25 @@ WSGI_APPLICATION = "solid-pod-lg.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': {
+        'ENGINE': config.get('DATABASE_ENGINE'),
+        'HOST': config.get('DATABASE_HOST'),
+        'PORT': config.get('DATABASE_PORT'),
+        'USER': config.get('DATABASE_USER'),
+        'PASSWORD': config.get('DATABASE_PASSWORD'),
+        'NAME': config.get('DATABASE_NAME'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'use_unicode': True, },
+    },
 }
 
 
