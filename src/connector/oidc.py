@@ -110,7 +110,7 @@ def client_registration(state_session=None):
         registration_response = client.register(
             state_session.oicdp.provider_info['registration_endpoint'],
             **args)
-        print(f"registration_response: {registration_response.status}")
+        # print(f"registration_response: {registration_response}")
         code_verifier, code_challenge = make_verifier_challenge()
 
         state_session.client_id = registration_response.get('client_id')
