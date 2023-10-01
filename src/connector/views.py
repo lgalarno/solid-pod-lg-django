@@ -109,7 +109,7 @@ def oauth_callback(request):
                              'DPoP':  make_token_for(keypair, provider_info['token_endpoint'], 'POST')
                          },
                          allow_redirects=False)
-
+    print(f'callback rest: {resp}')
     # update state_session
     if resp.status_code == 200:
         result = resp.json()
@@ -128,6 +128,8 @@ def oauth_callback(request):
         request.session['web_id'] = web_id
         request.session['session_pk'] = state_session.pk
     else:
+        if state_session.access_token == "" or state_session.access_token is None:
+            state_session.delete()
         try:
             # api response
             result = resp.json()  # api response
