@@ -106,16 +106,19 @@ def client_registration(state_session=None):
     }
     # registration_response = client.register(url='https://solid.lgalarno.ca/.oidc/reg', **args)
     client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
-    registration_response = client.register(
-        state_session.oicdp.provider_info['registration_endpoint'],
-        **args)
-    print(f"registration_response: {registration_response}")
-    code_verifier, code_challenge = make_verifier_challenge()
+    try:
+        registration_response = client.register(
+            state_session.oicdp.provider_info['registration_endpoint'],
+            **args)
+        print(f"registration_response: {registration_response.status}")
+        code_verifier, code_challenge = make_verifier_challenge()
 
-    state_session.client_id = registration_response.get('client_id')
-    state_session.client_secret = registration_response.get('client_secret')
-    state_session.code_verifier = code_verifier
-    state_session.save()
+        state_session.client_id = registration_response.get('client_id')
+        state_session.client_secret = registration_response.get('client_secret')
+        state_session.code_verifier = code_verifier
+        state_session.save()
+    except Exception as e:
+        return False, e
 
     # 4) Authentication Request
     args = {
@@ -130,4 +133,4 @@ def client_registration(state_session=None):
     }
     auth_req = client.construct_AuthorizationRequest(request_args=args)
     query = auth_req.request(client.authorization_endpoint)
-    return query
+    return True, query

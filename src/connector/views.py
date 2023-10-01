@@ -75,9 +75,15 @@ def connect_oidc(request):
         pk = request.GET.get('session_pk')
         state_session = get_object_or_404(StateSession, pk=pk)
         authorization_endpoint = state_session.oicdp.provider_info['authorization_endpoint']
-    query = client_registration(state_session=state_session)
-    auth_query = authorization_endpoint + query
-    return redirect(auth_query)
+    valid, query = client_registration(state_session=state_session)
+    if valid:
+        auth_query = authorization_endpoint + query
+        return redirect(auth_query)
+    else:
+        if state_session.client_id == "" or state_session.client_id is None:
+            state_session.delete()
+        messages.error(request, f"Error: {query}")
+        return redirect('pods:dashboard')
 
 
 def oauth_callback(request):
