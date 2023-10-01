@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, reverse, get_object_or_404, HttpResponseRedirect, HttpResponse, redirect
 from django.views.decorators.http import require_http_methods
 
+from datetime import datetime
 from pathlib import Path
 
 from connector.solid_api import SolidAPI
@@ -58,14 +59,15 @@ def view_resource(request, pk):
         # request = refresh_token(request=request, state_session=state_session)
 
         if not state_session.is_active:
-            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:view_resource'))
+            redirect_view = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
+            refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
             return redirect(refresh_token_query)
 
         headers = get_headers(access_token=state_session.access_token,
                               DPoP_key=state_session.DPoP_key,
                               lookup_url=lookup_url,
                               method='GET')
-        api = SolidAPI(headers=headers)
+        api = SolidAPI(headers=headers)  # , pod=pod.url)
         resp = api.get(url=lookup_url)
         # resp = requests.get(url=lookup_url, headers=headers)
 
@@ -79,12 +81,13 @@ def view_resource(request, pk):
         elif resp.status_code != 200:
             messages.error(request, f"Error: {resp.status_code} {resp.text}")
         else:  # resp.status_code == 200
+            pod.viewed()
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if 'text/turtle' in content_type:
                 print('text/turtle')
-                folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content)
-                folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
+                folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content, pod=pod.url)
+                # folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
                         f.view_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={f.url}'
@@ -134,7 +137,11 @@ def create_resource(request, pk):
                               method='POST')
         # request = refresh_token(request=request, state_session=state_session)
         if not state_session.is_active:
-            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:create_resource'))
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:view_resource',
+                                                                                          kwargs={'pk': pk})
+                                                                    )
+            messages.warning(request,
+                             f"Please, try again.")
             return redirect(refresh_token_query)
 
         api = SolidAPI(headers=headers)
@@ -171,7 +178,8 @@ def delete_resource(request, pk):
                           method='DELETE')
     # request = refresh_token(request=request, state_session=state_session)
     if not state_session.is_active:
-        refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:delete_resource'))
+        redirect_view = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
+        refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
         return redirect(refresh_token_query)
 
     api = SolidAPI(headers=headers)

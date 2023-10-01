@@ -24,9 +24,21 @@ _CLIENT_URL = settings.CLIENT_URL
 
 # Create your views here.
 
-@require_http_methods(["POST"])
-def connect_webid(request):
-    pk = request.POST.get('session_id')
+# @require_http_methods(["POST"])
+# def connect_webid(request):
+#     pk = request.POST.get('session_id')
+#     state_session = get_object_or_404(StateSession, pk=pk)
+#     if state_session.is_active:
+#         request.session['web_id'] = state_session.webid
+#         request.session['session_pk'] = state_session.pk
+#         return redirect('pods:dashboard')
+#     else:
+#         refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:dashboard'))
+#         return redirect(refresh_token_query)
+
+
+def connect_webid(request, pk):
+    # pk = request.POST.get('session_id')
     state_session = get_object_or_404(StateSession, pk=pk)
     if state_session.is_active:
         request.session['web_id'] = state_session.webid
@@ -35,18 +47,6 @@ def connect_webid(request):
     else:
         refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:dashboard'))
         return redirect(refresh_token_query)
-
-    # redirect_view = reverse('pods:dashboard')
-    # refresh_token_view = reverse('connector:refesh-token')
-    # refresh_token_uri = f'{refresh_token_view}?session_pk={pk}&redirect_uri={redirect_view}'
-
-
-    # s = get_object_or_404(StateSession, pk=pk)
-    # request = refresh_token(request=request, state_session=s)
-    # t = str(request.session['web_id'])
-    # if t.startswith('<html>'):
-    #     return HttpResponse(t)
-    # return redirect('pods:dashboard')
 
 
 def disconnect_webid(request):

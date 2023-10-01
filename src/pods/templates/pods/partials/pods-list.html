@@ -1,3 +1,4 @@
+{% load tz %}
 {% if pods %}
     <div class="table-responsive">
         <table class="table" id="data_table">
@@ -19,9 +20,11 @@
                             {{ p.url }}
                         </td>
                         <td>
-{#                            {% localtime off %}#}
-{#                                {{ s.state.local_expires_at }}#}
-{#                            {% endlocaltime %}#}
+                        {% if p.last_viewed %}
+                            {% localtime off %}
+                                {{ p.local_last_viewed }}
+                            {% endlocaltime %}
+                        {% endif %}
                         </td>
                         <td>
 {#                            <button title="delete" hx-confirm="Are you sure?" cl#}
@@ -31,7 +34,7 @@
 {#                            </button>#}
                             <a title="delete" hx-confirm="Are you sure?"
                                 hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"
-                                hx-target="#solid-pod-form" class="">
+                                hx-target="#solid-pod-form">
                                 <i class="fa-regular fa-trash-can"></i>
                             </a>
                             {% if request.session.web_id %}

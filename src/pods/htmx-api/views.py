@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 
 from pods.forms import OpenIDproviderForm, SolidPodForm
 
@@ -29,6 +29,17 @@ def create_provider(request):
     return render(request, 'pods/partials/provider-form.html', context)
 
 
+def delete_webid(request, pk):
+    s = get_object_or_404(StateSession, id=pk)
+    s.delete()
+    sessions = StateSession.objects.filter(user=request.user)
+    context = {
+        'sessions': sessions,
+        'form': None,
+    }
+    return render(request, 'pods/partials/webid-list.html', context)
+
+
 def create_pod(request):
     form = SolidPodForm(request.POST or None)
     if request.method == "POST":
@@ -47,7 +58,6 @@ def create_pod(request):
             request.session['pod_form'] = True
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        "title": "create-pod",
         'pods': pods,
         'form_pod': form,
     }
@@ -59,7 +69,6 @@ def delete_pod(request, pk):
     p.delete()
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        "title": "create-pod",
         'pods': pods,
         'form': None,
     }

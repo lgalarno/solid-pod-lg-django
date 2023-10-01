@@ -15,9 +15,20 @@ class SolidPod(models.Model):
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     url = models.URLField(default='')
+    last_viewed = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.url
+
+    def viewed(self):
+        self.last_viewed = datetime.utcnow()
+        self.save()
+        return
+
+    @property
+    def local_last_viewed(self):
+        eastern = timezone('US/Eastern')
+        return self.last_viewed.astimezone(eastern)
 
     @property
     def view_url(self):

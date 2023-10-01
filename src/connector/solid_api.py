@@ -83,11 +83,12 @@ RequestContent = Union[str, bytes, Iterable[bytes], AsyncIterable[bytes]]
 
 
 class SolidAPI:
-    def __init__(self, headers=None):
+    def __init__(self, headers=None, pod=None):
         self.client = httpx.Client()
         self.headers = headers
+        self.pod = headers
 
-    def _fetch(self, method, url, options: Dict = None) -> Response:
+    def fetch(self, method, url, options: Dict = None) -> Response:
         if not options:
             options = {}
         if self.headers:
@@ -218,8 +219,8 @@ class SolidAPI:
 
         return parsed_folder
 
-    def read_folder_offline(self, url=None, ttl=None,  options: ReadFolderOptions = ReadFolderOptions()) -> FolderData:
-        parsed_folder = parse_folder_response(url=url, text=ttl)
+    def read_folder_offline(self, url=None, ttl=None, pod=None, options: ReadFolderOptions = ReadFolderOptions()) -> FolderData:
+        parsed_folder = parse_folder_response(url=url, text=ttl, pod=pod)
         if options.links in (LINKS.INCLUDE_POSSIBLE, LINKS.INCLUDE):
             raise Exception('Not implemented')
 

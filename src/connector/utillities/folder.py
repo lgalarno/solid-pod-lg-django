@@ -1,4 +1,3 @@
-from httpx import Response
 from hurry.filesize import size
 from rdflib import Namespace, Graph, URIRef, RDF
 from connector.utillities.snippets import get_item_name, get_parent_url
@@ -14,7 +13,7 @@ container_types = [URIRef('http://www.w3.org/ns/ldp#Container'), URIRef('http://
 #     return _parse_folder_response(folder_response.text, url, base_read_url)
 
 # get ttl text directly
-def parse_folder_response(text, url):
+def parse_folder_response(text, url, pod):
     # print(text)
     from connector.solid_api import FolderData, Item
     g = Graph().parse(data=text, publicID=url, format='turtle')
@@ -45,13 +44,22 @@ def parse_folder_response(text, url):
         #  raise Exception('Not a container.')
 
     folders, files = [], []
+    item = Item()  # create parent item
+    item.name = '../'  # get_item_name(this) Parent url
+    if url == pod:
+        item.url = this
+    else:
+        item.url = get_parent_url(url)
+    item.itemType = 'Container' if is_container(this) else 'Resource'
+    cat = folders if is_container(this) else files
+    cat.append(item)
+
     # TODO solidcommunity root folder
     for obj in g.objects(this, LDP.contains):
         item_url = str(obj)
-        # print(item_url)
         item = Item()
-        item.parent = get_parent_url(item_url)
-        item.links = None
+        # item.parent = get_parent_url(item_url)
+        # item.links = None
         item.name = get_item_name(item_url)
         # get size of the file
         item.size = get_item_size(item_url)
@@ -63,9 +71,9 @@ def parse_folder_response(text, url):
     ret = FolderData()
     ret.url = url
     ret.name = get_item_name(url)
-    print('get folder parent')
-    ret.parent = get_parent_url(url)
-    ret.links = None  #
+    # print('get folder parent', pod)
+    # ret.parent = get_parent_url(url)
+    # ret.links = None  #
     ret.folders = folders
     ret.files = files
 

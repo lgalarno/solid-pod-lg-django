@@ -37,9 +37,8 @@ def get_root_url(url: str) -> str:
 
 
 def get_parent_url(url) -> str:
-    print(url)
+    #print(url)
     url = remove_slashes_at_end(url)
-
     if url.count('/') == 2:  # is base url, no parent url, return itself
         return append_slashes_at_end(url)
 
