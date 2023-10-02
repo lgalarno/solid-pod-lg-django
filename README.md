@@ -29,7 +29,6 @@ This is the repository for the Solid Pod LG
 * Create Python 3 virtual environment
 * Create a virtualenv using Python 3
 * pip install –r requirements.txt
-* During development, use the database: db.sqlite3
 * Create .env file in the src folder which should contain:
 
   - ALLOWED_HOSTS
@@ -43,6 +42,14 @@ This is the repository for the Solid Pod LG
     - email address
   - CLIENT_URL
     - example: '127.0.0.1:8000/'
+
+* During development, use the database: db.sqlite3. Otherwise, put the DB config in the .env file:
+    - DATABASE_ENGINE='*****'
+    - DATABASE_HOST='*****'
+    - DATABASE_USER='*****'
+    - DATABASE_PASSWORD='****'
+    - DATABASE_NAME='****'
+    - DATABASE_PORT='*****'
 
 ### Credit
 The project [solid-file-python/twonote](https://github.com/twonote/solid-file-python) was modified to be used as the crud api
