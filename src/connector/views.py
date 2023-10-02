@@ -109,7 +109,6 @@ def oauth_callback(request):
                              'DPoP':  make_token_for(keypair, provider_info['token_endpoint'], 'POST')
                          },
                          allow_redirects=False)
-    print(f'callback rest: {resp}')
     # update state_session
     if resp.status_code == 200:
         result = resp.json()

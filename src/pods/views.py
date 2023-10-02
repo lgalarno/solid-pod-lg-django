@@ -28,16 +28,7 @@ def dashboard(request):
     return render(request, "pods/dashboard.html", context)
 
 
-@require_http_methods(["POST"])
-def connect_webid(request):
-    pk = request.POST.get('session_id')
-    s = get_object_or_404(StateSession, pk=pk)
-    request = refresh_token(request=request, state_session=s)
-    return redirect('pods:dashboard')
-
-
 def view_resource(request, pk):
-    print("view_resource")
     resource_content = None
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
@@ -48,14 +39,11 @@ def view_resource(request, pk):
         'pod': pod.url
     }
     if request.method == "POST":
-        print("crud read POST")
         lookup_url = pod.url
     elif request.method == "GET":
-        print("crud read GET")
         lookup_url = request.GET.get("url")
 
     if lookup_url:
-        print(lookup_url)
         # request = refresh_token(request=request, state_session=state_session)
 
         if not state_session.is_active:
@@ -85,7 +73,6 @@ def view_resource(request, pk):
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if 'text/turtle' in content_type:
-                print('text/turtle')
                 folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content, pod=pod.url)
                 # folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
@@ -98,7 +85,6 @@ def view_resource(request, pk):
                     context['folder_data'] = folder_data
 
             else:  # content_type.startswith('application'):
-                print('else')
                 fn = Path(lookup_url).name
                 response = HttpResponse(
                     resp.content,
@@ -118,7 +104,6 @@ def view_resource(request, pk):
 
 @require_http_methods(["POST"])
 def create_resource(request, pk):
-    print("create_resource")
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
     lookup_url = request.POST.get("lookup_url")
@@ -163,7 +148,6 @@ def update_resource(request, pk):
 
 
 def delete_resource(request, pk):
-    print("delete_resource")
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
     lookup_url = request.GET.get("url")

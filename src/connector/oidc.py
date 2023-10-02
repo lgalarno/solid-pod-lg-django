@@ -71,8 +71,6 @@ def make_token_for(keypair, uri, method):
 
 def get_web_id(access_token):
     decoded_access_token = jwcrypto.jwt.JWT(jwt=access_token)
-    print(json.loads(
-        decoded_access_token.token.objects['payload']))
     web_id = json.loads(
         decoded_access_token.token.objects['payload'])['sub']
     return web_id
@@ -88,7 +86,6 @@ def provider_discovery(provider_url):
     except requests.ConnectionError as e:
         return f'Connection Error. {str(e)}', False
     if resp.status_code == 200:
-        print(resp.text)
         provider_info = resp.json()
         return provider_info, True
     else:
