@@ -55,7 +55,7 @@ def create_issuer(request):
 def delete_webid(request, pk):
     s = get_object_or_404(StateSession, id=pk)
     s.delete()
-    sessions = StateSession.objects.filter(user=request.user)
+    sessions = StateSession.objects.filter(user=request.user).exclude(webid__isnull=True).exclude(webid__isnull='')
     context = {
         'sessions': sessions,
         'form': None,

@@ -16,7 +16,8 @@ from .models import OpenIDprovider,  SolidPod, StateSession
 
 # TODO login with web id with select
 def dashboard(request):
-    sessions = StateSession.objects.filter(user=request.user)  # contains WebID
+    # sessions = StateSession.objects.filter(user=request.user)  # contains WebID
+    sessions = StateSession.objects.with_webid(user=request.user)
     pods = SolidPod.objects.filter(user=request.user)
     #oidcps = OpenIDprovider.objects.all()
     context = {

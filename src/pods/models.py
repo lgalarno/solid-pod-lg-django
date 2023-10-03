@@ -56,7 +56,11 @@ class OpenIDprovider(models.Model):
 #         return f"issuer: {self.webid}"
 
 
-# state_session.redirect_view = reverse('crud:view_resource', kwargs={'pk': state_session.pk})
+class StateSessionManager(models.Manager):
+    def with_webid(self, user):
+        return super(StateSessionManager, self).filter(user=user).exclude(webid__isnull=True).exclude(webid='')
+
+
 class StateSession(models.Model):
     webid           = models.URLField(default='', null=True, blank=True)
     oicdp           = models.ForeignKey(to=OpenIDprovider, on_delete=models.CASCADE, null=True, blank=True)
@@ -74,6 +78,7 @@ class StateSession(models.Model):
     token_type      = models.CharField(max_length=255, default='', null=True, blank=True)
     timestamp       = models.DateTimeField(auto_now=False, auto_now_add=True, blank=True)
     updated         = models.DateTimeField(auto_now=True, auto_now_add=False, blank=True)
+    objects = StateSessionManager()
 
     def __str__(self):
         return f"state: {self.state}"
