@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, HttpResponseRedirect, HttpResponse, reverse
+from django.shortcuts import get_object_or_404, redirect, HttpResponseRedirect, HttpResponse, reverse, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
@@ -52,7 +52,6 @@ def connect_webid(request, pk):
 def disconnect_webid(request):
     request.session['web_id'] = None
     request.session['session_pk'] = None
-
     return redirect('pods:dashboard')
 
 

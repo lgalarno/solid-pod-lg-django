@@ -1,0 +1,28 @@
+<form method="post" class="modal-content">
+    {% csrf_token %}
+        <div class="modal-header">
+            <h4>Add a Web ID issuer URL</h4>
+        </div>
+
+        <div class="modal-body">
+            {% if form_issuer.errors %}
+                <div class="alert alert-danger">
+                    {{ form_issuer.errors }}
+                </div>
+            {% endif %}
+
+            <div class="form-group mb-0">
+                <div id="div_id_url" class="mb-3">
+                    <input type="url" name="url" maxlength="200" class="urlinput form-control" required="" id="id_url" value="{{ form.data.url }}">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button
+                hx-post="{% url 'pods:pods_htmx-api:create-issuer' %}"
+                class="btn btn-primary">
+                add
+            </button>
+        </div>
+</form>

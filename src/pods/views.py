@@ -18,12 +18,12 @@ from .models import OpenIDprovider,  SolidPod, StateSession
 def dashboard(request):
     sessions = StateSession.objects.filter(user=request.user)  # contains WebID
     pods = SolidPod.objects.filter(user=request.user)
-    oidcps = OpenIDprovider.objects.all()
+    #oidcps = OpenIDprovider.objects.all()
     context = {
         'title': 'dashboard',
         'sessions': sessions,  # contains WebID
         'pods': pods,
-        'oidcps': oidcps
+        #'oidcps': oidcps
     }
     return render(request, "pods/dashboard.html", context)
 

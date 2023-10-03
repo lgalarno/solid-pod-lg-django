@@ -17,7 +17,7 @@ This is the repository for the Solid Pod LG
    - Supported:
       - CommunitySolidServer (https://github.com/CommunitySolidServer/CommunitySolidServer)
       - node-solid-server (https://github.com/nodeSolidServer/node-solid-server)
-   - Unupported: Inrupt Solid Pods 
+   - Unsupported: Inrupt Solid Authentication 
 2. View ttl files, folders and other files
 3. Download files (not ttl)
 4. Upload Files
@@ -26,7 +26,6 @@ This is the repository for the Solid Pod LG
 ### Installation Instructions ###
 
 * Clone the repository
-* Create Python 3 virtual environment
 * Create a virtualenv using Python 3
 * pip install –r requirements.txt
 * Create .env file in the src folder which should contain:

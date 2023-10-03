@@ -1,38 +1,37 @@
-{% if form_pod %}
+<form method="post" class="modal-content">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h4>Add a Solid pod</h4>
+    </div>
 
-    {% if form_pod.errors %}
-        <div class="row justify-content-md-center">
-            <div class="col-md-12 alert alert-danger">
+    <div class="modal-body">
+        {% if form_pod.errors %}
+            <div class="alert alert-danger">
                 {{ form_pod.errors }}
             </div>
-        </div>
-    {% endif %}
+        {% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        <div class="row justify-content-md-center">
-            <div class="form-group col-md-3 mb-0">
-                <div id="div_id_name" class="mb-3">
-                    <input type="text" name="name" maxlength="255" class="textinput form-control" required="" id="id_name" value="{{ form.data.name }}">
-                    <label for="id_name" class="form-label requiredField">Name<span class="asteriskField">*</span></label>
-                </div>
-            </div>
-            <div class="form-group col-md-8 mb-0">
-                <div id="div_id_url" class="mb-3">
-                    <input type="url" name="url" maxlength="200" class="urlinput form-control" required="" id="id_url" value="{{ form.data.url }}">
-                    <label for="id_url" class="form-label requiredField">URL<span class="asteriskField">*</span></label>
-                </div>
-            </div>
-            <div class="form-group col-md-1 mb-0">
-                <button
-                    hx-post="{% url 'pods:pods-htmx-api:create-pod' %}"
-                    hx-target="#solid-pod-form" class="btn btn-primary float-end">
-                    add
-                </button>
+        <div class="form-group mb-0">
+            <div id="div_id_name" class="mb-3">
+                <input type="text" name="name" maxlength="255" class="textinput form-control" required="" id="id_name" value="{{ form.data.name }}">
+                <label for="id_name" class="form-label requiredField">Name<span class="asteriskField">*</span></label>
             </div>
         </div>
-    </form>
 
-{% endif %}
+        <div class="form-group mb-0">
+            <div id="div_id_url" class="mb-3">
+                <input type="url" name="url" maxlength="200" class="urlinput form-control" required="" id="id_url" value="{{ form.data.url }}">
+                <label for="id_url" class="form-label requiredField">URL<span class="asteriskField">*</span></label>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+            hx-post="{% url 'pods:pods-htmx-api:create-pod' %}"
+            class="btn btn-primary float-end">
+            add
+        </button>
+    </div>
+</form>
 
-{% include 'pods/partials/pods-list.html' %}

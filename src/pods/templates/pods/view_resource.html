@@ -8,11 +8,14 @@
         <div class="row justify-content-md-center">
             <div class="col-md-10">
                 <h3 class="p-3 mb-2 bg-light">Solid pod : {{ pod }} </h3>
-                <h4>ttl content &nbsp;<small><button class="toggle-ttl btn-sm">&#9660;</button></small></h4>
-
-                <div class="hide-show-ttl" style="display: none">
+                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
+                <div id="ttl-content" class="collapse">
                     <pre class="bg-light">{{ resource_content }}</pre>
                 </div>
+{#                <h4>ttl content &nbsp;<small><button class="toggle-ttl btn-sm">&#9660;</button></small></h4>#}
+{#                <div class="hide-show-ttl" style="display: none">#}
+{#                    <pre class="bg-light">{{ resource_content }}</pre>#}
+{#                </div>#}
                 <hr>
             </div>
         </div>
@@ -35,7 +38,7 @@
     {% endif %}
 
 {% endblock %}
-
-{% block js %}
-    <script src="{% static 'pods/js/resource_content.js' %}"></script>
-{% endblock js %}
+{##}
+{#{% block js %}#}
+{#    <script src="{% static 'pods/js/resource_content.js' %}"></script>#}
+{#{% endblock js %}#}

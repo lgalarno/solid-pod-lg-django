@@ -34,7 +34,7 @@
 {#                            </button>#}
                             <a title="delete" hx-confirm="Are you sure?"
                                 hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"
-                                hx-target="#solid-pod-form">
+                                hx-target="#pods-list">
                                 <i class="fa-regular fa-trash-can"></i>
                             </a>
                             {% if request.session.web_id %}

@@ -30,7 +30,7 @@ class OpenIDproviderForm(forms.ModelForm):
                     cleaned_data['url'] = provider_url
                 else:
                     # can't get provider_info
-                    self.add_error('provider_info', f"Invalid provider. {provider_info}")
+                    self.add_error('provider_info', f"Invalid issuer. {provider_info}")
             except:
                 self.add_error('url', f"Invalid URL. Please, try again or check the address.")
         return cleaned_data
