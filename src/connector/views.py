@@ -110,19 +110,9 @@ def oauth_callback(request):
                          allow_redirects=False)
     # update state_session
     if resp.status_code == 200:
-        result = resp.json()
         # update state_session with tokens from the exchange
-        at = result.get('access_token')
-        web_id = get_web_id(at)
-        state_session.access_token = at
-        state_session.id_token = result.get('id_token')
-        state_session.DPoP_key = keypair.export()
-        state_session.webid = web_id
-        expires_at = datetime.utcnow() + timedelta(seconds=result.get('expires_in'))
-        state_session.expires_at = timezone.make_aware(expires_at, pytz.UTC, True)
-        state_session.token_type = result.get('token_type')
-        state_session.refresh_token = result.get('refresh_token')
-        state_session.save()
+        web_id = _update_state_session(resp, state_session, keypair)
+
         request.session['web_id'] = web_id
         request.session['session_pk'] = state_session.pk
     else:
@@ -172,20 +162,8 @@ def refresh_token(request):
                              allow_redirects=False)
         # update state_session
         if resp.status_code == 200:
-            result = resp.json()
             # update state_session with tokens from the exchange
-            at = result.get('access_token')
-            web_id = get_web_id(at)
-
-            state_session.access_token = at
-            state_session.id_token = result.get('id_token')
-            state_session.DPoP_key = keypair.export()
-            state_session.web_id = web_id
-            expires_at = datetime.utcnow() + timedelta(seconds=result.get('expires_in'))
-            state_session.expires_at = timezone.make_aware(expires_at, pytz.UTC, True)
-            state_session.token_type = result.get('token_type')
-            state_session.refresh_token = result.get('refresh_token')
-            state_session.save()
+            web_id = _update_state_session(resp, state_session, keypair)
             request.session['web_id'] = web_id
             request.session['session_pk'] = state_session.pk
         else:
@@ -207,3 +185,27 @@ def refresh_token(request):
                 messages.error(request, resp.text)
 
     return redirect(redirect_uri)  # request
+
+
+def _update_state_session(response, state_session, keypair) -> str:
+
+    try:
+        resp= response.json()
+        # update state_session with tokens from the exchange
+        at = resp.get('access_token')
+        web_id = get_web_id(at)
+
+        state_session.access_token = at
+        state_session.id_token = resp.get('id_token')
+        state_session.DPoP_key = keypair.export()
+        state_session.web_id = web_id
+
+        expires_at = datetime.utcnow() + timedelta(seconds=resp.get('expires_in'))
+        state_session.expires_at = timezone.make_aware(expires_at, pytz.UTC, True)
+        state_session.token_type = resp.get('token_type')
+        state_session.refresh_token = resp.get('refresh_token')
+        state_session.save()
+    except:
+        web_id = None
+    return web_id
+

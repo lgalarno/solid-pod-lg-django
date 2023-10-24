@@ -5,7 +5,7 @@
 {% block content %}
     <br>
     <div class="row justify-content-md-center">
-        <div class="col col-sm-10">
+        <div class="col col-sm-10 bg-white p-3 mb-2 rounded shadow-sm">
             <h3 class="d-inline-block" >Connection</h3>
 {#            <button class="btn btn-primary btn-sm float-end"#}
 {#                    hx-get="{% url 'pods:pods_htmx-api:create-provider' %}"#}
@@ -39,8 +39,8 @@
         </div>
     </div>
 
-    <div class="row justify-content-md-center">
-        <div class="col col-sm-10">
+    <div class="row justify-content-md-center ">
+        <div class="col col-sm-10 bg-white p-3 mb-2 rounded shadow-sm">
             <h3 class="d-inline-block">Pods</h3>
             <button class="btn btn-primary btn-sm float-end"
                     hx-get="{% url 'pods:pods-htmx-api:create-pod' %}"

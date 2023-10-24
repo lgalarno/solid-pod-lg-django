@@ -5,13 +5,15 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-<body>
+<body class="bg-light">
     {% include 'navbar.html' %}
     <main role="main">
         <div class="container-fluid">
             <br>
             {% include 'messages_display.html' %}
-            {% include 'pod_login_status.html' %}
+            {% if  request.user.is_authenticated %}
+                {% include 'pod_login_status.html' %}
+            {% endif %}
             {% block content %}
             {% endblock content %}
             <br>

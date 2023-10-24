@@ -41,7 +41,7 @@ def create_issuer(request):
             form = None
         else:
             request.session['provider_form'] = True
-    sessions = StateSession.objects.filter(user=request.user)  # contains WebID
+    sessions = StateSession.objects.with_webid(user=request.user)  # contains WebID
     oidcps = OpenIDprovider.objects.all()
     context = {
         "title": "create-webid",
@@ -55,7 +55,7 @@ def create_issuer(request):
 def delete_webid(request, pk):
     s = get_object_or_404(StateSession, id=pk)
     s.delete()
-    sessions = StateSession.objects.filter(user=request.user).exclude(webid__isnull=True).exclude(webid__isnull='')
+    sessions = StateSession.objects.with_webid(user=request.user)
     context = {
         'sessions': sessions,
         'form': None,
