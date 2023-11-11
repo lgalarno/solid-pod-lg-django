@@ -1,7 +1,7 @@
 <div class="row justify-content-md-center text-center" id="pod-login-status">
     <div class="col col-sm-10 p-3 mb-2 rounded shadow-sm">
         <h3>Login status</h3>
-        {% if request.session.web_id %}
+        {% if request.session.web_id and request.user.is_authenticated %}
             <div class="bg-dark text-white p-3 mb-2 rounded shadow-sm">
                 <p >You are logged in as {{ request.session.web_id }}.
                 <a href="{% url 'connector:disconnect-webid' %}" class="btn btn-dark btn-sm float-end">Disconnect</a>

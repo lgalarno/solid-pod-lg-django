@@ -9,6 +9,7 @@
                 <p>You need to <a href="{% url "accounts:login" %}">log in</a> to access your data!</p>
                 <p>Need an account? Please <a href={% url 'accounts:register' %}>Register</a></p>
                 <br>
+
 {#                <a href="{% url 'oidc:connect' %}">>> Try simple lookup to a solid pod <<</a>#}
             {% endif %}
         </div>

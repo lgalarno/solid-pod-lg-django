@@ -3,27 +3,31 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    {% if resource_content %}
-        <br>
-        <div class="row justify-content-md-center ">
-            <div class="col-md-10 bg-white p-3 mb-2 rounded shadow-sm">
-                <h3>Solid pod : {{ pod }} </h3>
-                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
-                <div id="ttl-content" class="collapse">
-                    <pre class="bg-light">{{ resource_content }}</pre>
-                </div>
+    {% include 'pods/partials/pod_login_status.html' %}
+
+    <br>
+    <div class="row justify-content-md-center ">
+        <div class="col-md-10 bg-white p-3 mb-2 rounded shadow-sm">
+            <h3>Solid pod : {{ pod }} </h3>
+            <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
+            <div id="ttl-content" {% if folder_data %}class="collapse"{% else%}class="collapse.show"{% endif%}>
+                <pre class="bg-light">{{ resource_content }}</pre>
+            </div>
 {#                <h4>ttl content &nbsp;<small><button class="toggle-ttl btn-sm">&#9660;</button></small></h4>#}
 {#                <div class="hide-show-ttl" style="display: none">#}
 {#                    <pre class="bg-light">{{ resource_content }}</pre>#}
 {#                </div>#}
-                <hr>
-            </div>
+            <hr>
         </div>
-        <div class="row justify-content-md-center">
-            <div class="col-md-6 bg-white p-3 mb-2  me-2  rounded shadow-sm">
-                {% include 'pods/partials/resource_content.html' %}
-            </div>
-            <div class="col-md-4 bg-white p-3 mb-2 rounded shadow-sm">
+    </div>
+
+    <div class="row justify-content-md-center">
+        <div class="col-md-6 bg-white p-3 mb-2  me-2  rounded shadow-sm">
+            {% include 'pods/partials/resource_content.html' %}
+        </div>
+
+        <div class="col-md-4 bg-white p-3 mb-2 rounded shadow-sm">
+            {% if folder_data %}
                 <h4>Upload file</h4>
                 <form method="POST" action="{% url 'pods:create_resource' state_session_pk %}" enctype="multipart/form-data" id="formfile" name="formfile" class="bg-light">
                     {% csrf_token %}
@@ -33,10 +37,10 @@
                         <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Upload</button>
                     </div>
                 </form>
-            </div>
+            {% endif %}
         </div>
-    {% endif %}
 
+    </div>
 {% endblock %}
 {##}
 {#{% block js %}#}

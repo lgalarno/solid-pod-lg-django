@@ -98,7 +98,7 @@ def client_registration(state_session=None):
     args = {
         "redirect_uris": [_OID_CALLBACK_URI],
         "contacts": [_CLIENT_CONTACT],
-        "grant_types": ["refresh_token", "authorization_code", "client_credentials"],
+        "grant_types": ["refresh_token", "authorization_code"],
         "client_name": _CLIENT_NAME
     }
     # registration_response = client.register(url='https://solid.lgalarno.ca/.oidc/reg', **args)
@@ -107,11 +107,10 @@ def client_registration(state_session=None):
         registration_response = client.register(
             state_session.oicdp.provider_info['registration_endpoint'],
             **args)
-        # print(f"registration_response: {registration_response}")
-        code_verifier, code_challenge = make_verifier_challenge()
-
+        print(f"registration_response: {registration_response}")
         state_session.client_id = registration_response.get('client_id')
         state_session.client_secret = registration_response.get('client_secret')
+        code_verifier, code_challenge = make_verifier_challenge()
         state_session.code_verifier = code_verifier
         state_session.save()
     except Exception as e:

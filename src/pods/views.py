@@ -59,7 +59,6 @@ def view_resource(request, pk):
         api = SolidAPI(headers=headers)  # , pod=pod.url)
         resp = api.get(url=lookup_url)
         # resp = requests.get(url=lookup_url, headers=headers)
-
         #print(resource_content)
         if resp.status_code == 401:
             messages.warning(request,
@@ -73,8 +72,10 @@ def view_resource(request, pk):
             pod.viewed()
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
+            print(content_type)
             if 'text/turtle' in content_type:
                 folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content, pod=pod.url)
+                print(folder_data)
                 # folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
@@ -96,7 +97,7 @@ def view_resource(request, pk):
 
         context['resource_content'] = resource_content
         context['lookup_url'] = lookup_url
-
+    print(f'contest: {context}')
     return render(request,
                   'pods/view_resource.html',
                   context=context
