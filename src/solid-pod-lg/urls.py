@@ -35,7 +35,7 @@ urlpatterns = [
     path('about/', TemplateView.as_view(template_name="index.html"), name="about"),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('account/', include('accounts.urls', namespace="accounts")),
-    path('pods/', include('pods.urls', namespace="pods")),
+    path('pod_registration/', include('pod_registration.urls', namespace="pod_registration")),
     path('connector/', include('connector.urls', namespace="connector")),
 ]
 

@@ -1,29 +1,29 @@
 from django.shortcuts import render, get_object_or_404, HttpResponse
 
-from pods.forms import OpenIDproviderForm, SolidPodForm
+from pod_registration.forms import OpenIDproviderForm, SolidPodForm
 
-from pods.models import SolidPod, OpenIDprovider, StateSession
+from pod_registration.models import SolidPod, OpenIDprovider, StateSession
 
 
 def issuer_list(request):
     context = {
         'oidcps': OpenIDprovider.objects.all(),
     }
-    return render(request, 'pods/partials/oidcps-list.html', context)
+    return render(request, 'pod_registration/partials/oidcps-list.html', context)
 
 
 def pod_list(request):
     context = {
         'pods': SolidPod.objects.filter(user=request.user),
     }
-    return render(request, 'pods/partials/pods-list.html', context)
+    return render(request, 'pod_registration/partials/pods-list.html', context)
 
 
 # def webid_list(request):
 #     context = {
 #         'sessions': StateSession.objects.filter(user=request.user)  # contains WebID
 #     }
-#     return render(request, "pods/partials/webid-list.html", context)
+#     return render(request, "pod_registration/partials/webid-list.html", context)
 
 
 def create_issuer(request):
@@ -49,7 +49,7 @@ def create_issuer(request):
         'sessions': sessions,  # contains WebID
         'oidcps': oidcps,
     }
-    return render(request, 'pods/partials/issuer-form.html', context)
+    return render(request, 'pod_registration/partials/issuer-form.html', context)
 
 
 def delete_webid(request, pk):
@@ -60,7 +60,7 @@ def delete_webid(request, pk):
         'sessions': sessions,
         'form': None,
     }
-    return render(request, 'pods/partials/webid-list.html', context)
+    return render(request, 'pod_registration/partials/webid-list.html', context)
 
 
 def create_pod(request):
@@ -82,10 +82,10 @@ def create_pod(request):
             request.session['pod_form'] = True
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        'pods': pods,
+        'pod_registration': pods,
         'form_pod': form,
     }
-    return render(request, 'pods/partials/pod-form.html', context)
+    return render(request, 'pod_registration/partials/pod-form.html', context)
 
 
 def delete_pod(request, pk):
@@ -93,8 +93,8 @@ def delete_pod(request, pk):
     p.delete()
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        'pods': pods,
+        'pod_registration': pods,
         'form': None,
     }
-    return render(request, 'pods/partials/pods-list.html', context)
-    # return render(request, 'pods/partials/pod-form.html', context)
+    return render(request, 'pod_registration/partials/pods-list.html', context)
+    # return render(request, 'pod_registration/partials/pod-form.html', context)

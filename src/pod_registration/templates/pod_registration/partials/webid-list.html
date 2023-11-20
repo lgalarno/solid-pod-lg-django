@@ -22,7 +22,7 @@
 
                             <td>
                                 <a title="delete" hx-confirm="Are you sure?"
-                                    hx-get="{% url 'pods:pods-htmx-api:delete-webid' s.pk %}"
+                                    hx-get="{% url 'pod_registration:pod_registration-htmx-api:delete-pod' s.pk %}"
                                     hx-target="#webid-list">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </a>

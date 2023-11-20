@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        to="pods.openidprovider",
+                        to="pod_registration.openidprovider",
                     ),
                 ),
                 (

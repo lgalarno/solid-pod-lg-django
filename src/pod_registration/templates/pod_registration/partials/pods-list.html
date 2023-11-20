@@ -28,12 +28,12 @@
                         </td>
                         <td>
 {#                            <button title="delete" hx-confirm="Are you sure?" cl#}
-{#                                hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"#}
+{#                                hx-get="{% url 'pod_registration:pod_registration-htmx-api:delete-pod' p.pk %}"#}
 {#                                hx-target="#solid-pod-form" class="btn btn-primary btn-sm">#}
 {#                                <i class="fa-regular fa-trash-can"></i>#}
 {#                            </button>#}
                             <a title="delete" hx-confirm="Are you sure?"
-                                hx-get="{% url 'pods:pods-htmx-api:delete-pod' p.pk %}"
+                                hx-get="{% url 'pod_registration:pod_registration-htmx-api:delete-pod' p.pk %}"
                                 hx-target="#pods-list">
                                 <i class="fa-regular fa-trash-can"></i>
                             </a>

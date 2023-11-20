@@ -1,12 +1,10 @@
-from django.shortcuts import reverse
-
 import httpx
 
 from enum import Enum
 from httpx import Response, HTTPStatusError
-from typing import Optional, Union, Dict, Callable, Iterable, AsyncIterable, List
+from typing import Optional, Union, Dict, Iterable, AsyncIterable, List
 
-from connector.utillities.snippets import get_root_url, LINK, get_parent_url, get_item_name
+from connector.utillities.minis import get_root_url, LINK, get_parent_url, get_item_name
 from connector.utillities.folder import parse_folder_response
 
 

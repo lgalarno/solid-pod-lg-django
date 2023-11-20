@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class SolidpodsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "pods"
+    name = "pod_registration"

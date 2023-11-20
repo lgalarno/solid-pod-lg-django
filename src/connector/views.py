@@ -6,14 +6,15 @@ from django.views.decorators.http import require_http_methods
 
 from datetime import datetime, timedelta
 
+import httpx
 import jwcrypto
 import pytz
 import requests
 
-from connector.utillities.snippets import make_random_string
+from connector.utillities.minis import make_random_string
 from connector.oidc import make_token_for, get_web_id, client_registration
 
-from pods.models import StateSession, OpenIDprovider
+from pod_registration.models import StateSession, OpenIDprovider
 
 
 _OID_CALLBACK_URI = settings.OID_CALLBACK_URI
@@ -31,11 +32,28 @@ _CLIENT_URL = settings.CLIENT_URL
 #     if state_session.is_active:
 #         request.session['web_id'] = state_session.webid
 #         request.session['session_pk'] = state_session.pk
-#         return redirect('pods:dashboard')
+#         return redirect('pod_registration:dashboard')
 #     else:
-#         refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:dashboard'))
+#         refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:dashboard'))
 #         return redirect(refresh_token_query)
+def connect_api(request):
+    issuer_url = 'https://solid.insightdatalg.ca/'
+    r = httpx.post(url='http://localhost:3030/solid-pod-lg/user', data={'issuer_url': issuer_url})
+    print(r.json())
+    redirect_url = r.json()['redirect_url']
+    return redirect(redirect_url)
 
+
+def connect_api_callback(request):
+    print(request.GET)
+    resp = request.GET
+    context = {
+        'r1': resp
+    }
+    return render(request,
+                  'connector/connect-api.html',
+                  context=context
+                  )
 
 def connect_webid(request, pk):
     # pk = request.POST.get('session_id')
@@ -43,16 +61,16 @@ def connect_webid(request, pk):
     if state_session.is_active:
         request.session['web_id'] = state_session.webid
         request.session['session_pk'] = state_session.pk
-        return redirect('pods:dashboard')
+        return redirect('pod_registration:dashboard')
     else:
-        refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:dashboard'))
+        refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:dashboard'))
         return redirect(refresh_token_query)
 
 
 def disconnect_webid(request):
     request.session['web_id'] = None
     request.session['session_pk'] = None
-    return redirect('pods:dashboard')
+    return redirect('pod_registration:dashboard')
 
 
 def connect_oidc(request):
@@ -64,7 +82,7 @@ def connect_oidc(request):
         state_session = StateSession(
             state=state,
             user=request.user,
-            redirect_view=reverse('pods:dashboard'),
+            redirect_view=reverse('pod_registration:dashboard'),
             oicdp=op
         )
         state_session.save()
@@ -82,7 +100,7 @@ def connect_oidc(request):
         if state_session.client_id == "" or state_session.client_id is None:
             state_session.delete()
         messages.error(request, f"Error: {query}")
-        return redirect('pods:dashboard')
+        return redirect('pod_registration:dashboard')
 
 
 def oauth_callback(request):

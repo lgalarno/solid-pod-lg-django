@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     # custom app
     'accounts',
-    'pods',
+    'pod_registration',
     'connector'
 ]
 

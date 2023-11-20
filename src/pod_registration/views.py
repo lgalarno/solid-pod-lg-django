@@ -26,7 +26,7 @@ def dashboard(request):
         'pods': pods,
         #'oidcps': oidcps
     }
-    return render(request, "pods/dashboard.html", context)
+    return render(request, "pod_registration/dashboard.html", context)
 
 
 def view_resource(request, pk):
@@ -48,7 +48,7 @@ def view_resource(request, pk):
         # request = refresh_token(request=request, state_session=state_session)
 
         if not state_session.is_active:
-            redirect_view = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
+            redirect_view = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
             refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
             return redirect(refresh_token_query)
 
@@ -76,14 +76,14 @@ def view_resource(request, pk):
             if 'text/turtle' in content_type:
                 folder_data = api.read_folder_offline(url=lookup_url, ttl=resource_content, pod=pod.url)
                 print(folder_data)
-                # folder_data.view_parent_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
+                # folder_data.view_parent_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
-                        f.view_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={f.url}'
-                        f.del_url = reverse('pods:delete_resource', kwargs={'pk': pk}) + f'?url={f.url}'
+                        f.view_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={f.url}'
+                        f.del_url = reverse('pod_registration:delete_resource', kwargs={'pk': pk}) + f'?url={f.url}'
                     for f in folder_data.files:
-                        f.view_url = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={f.url}'
-                        f.del_url = reverse('pods:delete_resource', kwargs={'pk': pk}) + f'?url={f.url}'
+                        f.view_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={f.url}'
+                        f.del_url = reverse('pod_registration:delete_resource', kwargs={'pk': pk}) + f'?url={f.url}'
                     context['folder_data'] = folder_data
 
             else:  # content_type.startswith('application'):
@@ -99,7 +99,7 @@ def view_resource(request, pk):
         context['lookup_url'] = lookup_url
     print(f'contest: {context}')
     return render(request,
-                  'pods/view_resource.html',
+                  'pod_registration/view_resource.html',
                   context=context
                   )
 
@@ -124,7 +124,7 @@ def create_resource(request, pk):
                               method='POST')
         # request = refresh_token(request=request, state_session=state_session)
         if not state_session.is_active:
-            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pods:view_resource',
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:view_resource',
                                                                                           kwargs={'pk': pk})
                                                                     )
             messages.warning(request,
@@ -141,7 +141,7 @@ def create_resource(request, pk):
             messages.warning(request, f"Error: {resp.status_code} {resp.text}")
         else:  # resp.status_code == 201:
             messages.success(request, f"{fn} uploaded to {lookup_url}")
-    read_url = reverse('pods:view_resource', kwargs={'pk': pk})
+    read_url = reverse('pod_registration:view_resource', kwargs={'pk': pk})
     return HttpResponseRedirect(f'{read_url}?url={lookup_url}')
 
 
@@ -164,7 +164,7 @@ def delete_resource(request, pk):
                           method='DELETE')
     # request = refresh_token(request=request, state_session=state_session)
     if not state_session.is_active:
-        redirect_view = reverse('pods:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
+        redirect_view = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'
         refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
         return redirect(refresh_token_query)
 
@@ -178,5 +178,5 @@ def delete_resource(request, pk):
         messages.warning(request, f"Error: {resp.status_code} {resp.text}")
     else:  # resp.status_code == 205
         messages.success(request, f"{lookup_url}  deleted.")
-    read_url = reverse('pods:view_resource', kwargs={'pk': pk})
+    read_url = reverse('pod_registration:view_resource', kwargs={'pk': pk})
     return HttpResponseRedirect(f'{read_url}?url={redirect_url}')

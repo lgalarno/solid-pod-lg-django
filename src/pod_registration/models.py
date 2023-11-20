@@ -32,7 +32,7 @@ class SolidPod(models.Model):
 
     @property
     def view_url(self):
-        base_url = reverse('pods:view_resource', kwargs={"pk": self.pk})
+        base_url = reverse('pod_registration:view_resource', kwargs={"pk": self.pk})
         final_url = base_url + '?url=' + self.url
         return final_url
 
