@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # custom app
     'accounts',
     'pod_registration',
+    'pod_session',
     'connector'
 ]
 

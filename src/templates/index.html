@@ -6,12 +6,23 @@
             <h2>Welcome to Solid Pod LG</h2>
             {% if not request.user.is_authenticated %}
                 <br>
-                <p>You need to <a href="{% url "accounts:login" %}">log in</a> to access your data!</p>
+                <p>Log in with your account <a href="{% url "accounts:login" %}">log in</a> to access your data!</p>
                 <p>Need an account? Please <a href={% url 'accounts:register' %}>Register</a></p>
                 <br>
-
-{#                <a href="{% url 'oidc:connect' %}">>> Try simple lookup to a solid pod <<</a>#}
+                <p>Or</p>
             {% endif %}
+        </div>
+    </div>
+
+    <div class="row justify-content-md-center">
+        <div class="col col-md-6">
+            <p>Connect to a Web Id provider</p>
+            <form method="post" action="{% url 'pod_session:connect_oidc' %}">
+                {% csrf_token %}
+                <input type="text" class="form-control" name="issuer_url" placeholder="Web Id Provider url" value="{{ issuer_url }}" aria-label="WebId Provider url" aria-describedby="basic-addon2">
+                <br>
+                <button type="submit" class="btn btn-primary"> Log in  </button>
+            </form>
         </div>
     </div>
 {% endblock %}

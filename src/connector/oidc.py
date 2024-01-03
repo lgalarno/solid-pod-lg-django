@@ -14,6 +14,7 @@ import jwcrypto.jwt
 import requests
 
 from datetime import datetime
+
 from oic.oic import Client
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 
@@ -92,7 +93,15 @@ def provider_discovery(provider_url):
         return f'Connection Error. {resp}', False
 
 
-def client_registration(state_session=None):
+def client_registration(**kwargs):
+    print(f'client_registration: {kwargs}')
+    state_session = kwargs.get('state_session')
+    if state_session:
+        endpoint = state_session.oicdp.provider_info['registration_endpoint']
+    else:
+        endpoint = kwargs.get('registration_endpoint')
+        state = kwargs.get('state')
+
     # 3) Client registration
     # https://pyoidc.readthedocs.io/en/latest/examples/rp.html#client-registration
     args = {
@@ -105,28 +114,39 @@ def client_registration(state_session=None):
     client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
     try:
         registration_response = client.register(
-            state_session.oicdp.provider_info['registration_endpoint'],
+            endpoint,
             **args)
         print(f"registration_response: {registration_response}")
-        state_session.client_id = registration_response.get('client_id')
-        state_session.client_secret = registration_response.get('client_secret')
         code_verifier, code_challenge = make_verifier_challenge()
-        state_session.code_verifier = code_verifier
-        state_session.save()
+        client_id = registration_response.get('client_id')
+
+        session_updt = {
+            'client_id': client_id,
+            'client_secret': registration_response.get('client_secret'),
+            'code_verifier': code_verifier
+        }
+
+        # if state_session:
+        #     state = state_session.state
+        #     state_session.client_id = client_id
+        #     state_session.client_secret = registration_response.get('client_secret')
+        #     state_session.code_verifier = code_verifier
+        #     state_session.save()
+
     except Exception as e:
         return False, e
 
     # 4) Authentication Request
     args = {
-        "client_id": state_session.client_id,
+        "client_id": client_id,
         "response_type": "code",
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
         "scope": ["openid offline_access"],
         "redirect_uri": _OID_CALLBACK_URI,
-        "state": state_session.state,
+        "state": state,
         "prompt": "consent",
     }
     auth_req = client.construct_AuthorizationRequest(request_args=args)
     query = auth_req.request(client.authorization_endpoint)
-    return True, query
+    return session_updt, query

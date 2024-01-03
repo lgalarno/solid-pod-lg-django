@@ -3,7 +3,7 @@ from django.urls import path
 
 from . import views
 
-app_name = 'pods_htmx-api'
+app_name = 'pod_registration-htmx-api'
 
 urlpatterns = [
     path('create-pod/', login_required(views.create_pod), name="create-pod"),

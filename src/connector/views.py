@@ -7,12 +7,12 @@ from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 
 import httpx
+import json
 import jwcrypto
 import pytz
 import requests
 
-from connector.utillities.minis import make_random_string
-from connector.oidc import make_token_for, get_web_id, client_registration
+from connector.oidc import make_token_for, get_web_id, client_registration, make_random_string
 
 from pod_registration.models import StateSession, OpenIDprovider
 
@@ -55,6 +55,7 @@ def connect_api_callback(request):
                   context=context
                   )
 
+
 def connect_webid(request, pk):
     # pk = request.POST.get('session_id')
     state_session = get_object_or_404(StateSession, pk=pk)
@@ -88,12 +89,19 @@ def connect_oidc(request):
         state_session.save()
 
         authorization_endpoint = op.provider_info['authorization_endpoint']
-    elif request.method == 'GET':
+    else:
         pk = request.GET.get('session_pk')
         state_session = get_object_or_404(StateSession, pk=pk)
         authorization_endpoint = state_session.oicdp.provider_info['authorization_endpoint']
-    valid, query = client_registration(state_session=state_session)
-    if valid:
+
+    # valid, query = client_registration(state_session=state_session)
+    session_updt, query = client_registration(state=state_session.state,
+                                       registration_endpoint=state_session.oicdp.provider_info['registration_endpoint'])
+    if session_updt:
+        state_session.client_id = session_updt.get('client_id')
+        state_session.client_secret = session_updt.get('client_secret')
+        state_session.code_verifier = session_updt.get('code_verifier')
+        state_session.save()
         auth_query = authorization_endpoint + query
         return redirect(auth_query)
     else:
@@ -106,9 +114,14 @@ def connect_oidc(request):
 def oauth_callback(request):
     auth_code = request.GET.get('code', None)
     state = request.GET.get('state', None)
-    state_session = get_object_or_404(StateSession, state=state)
-
-    provider_info = state_session.oicdp.provider_info
+    state_session = request.session.get('state_session')
+    for x, y in request.session.items():
+        print(x, y)
+    if state_session:
+        provider_info = state_session.provider_info
+    else:
+        state_session = get_object_or_404(StateSession, state=state)
+        provider_info = state_session.oicdp.provider_info
     # Generate a key-pair.
     keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
     # Exchange auth code for access token
