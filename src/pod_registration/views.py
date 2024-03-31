@@ -116,11 +116,11 @@ def create_resource(request, pk):
         data = request.FILES['to_pod'].read()
         new_resource_url = resource_url + fn
         if not state_session.is_active:
-            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:update_resource',
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:view_resource',
                                                                                           kwargs={'pk': pk})
                                                                     )
-            # messages.warning(request,
-            #                  f"Please, try again.")
+            messages.warning(request,
+                             f"Please, try again.")
             return redirect(refresh_token_query)
         headers = get_headers(access_token=state_session.access_token,
                               DPoP_key=state_session.DPoP_key,

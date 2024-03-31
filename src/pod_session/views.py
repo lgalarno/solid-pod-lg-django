@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404, HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 
 from pathlib import Path
 
@@ -105,10 +106,10 @@ def resource_view(request):
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
                         f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
-                        f.del_url = reverse('pod_session:delete_resource') + f'?url={f.url}'
+                        f.del_url = reverse('pod_session:resource_delete') + f'?url={f.url}'
                     for f in folder_data.files:
                         f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
-                        f.del_url = reverse('pod_session:delete_resource') + f'?url={f.url}'
+                        f.del_url = reverse('pod_session:resource_delete') + f'?url={f.url}'
                     context['folder_data'] = folder_data
                 else:  # content_type.startswith('application'):
                     fn = Path(resource_url).name
@@ -126,7 +127,42 @@ def resource_view(request):
                   )
 
 
-def delete_resource(request):
+@require_http_methods(["POST"])
+def resource_create(request):
+    state_session = request.session.get('state_session')
+    resource_url = request.POST.get("resource_url")
+    if not resource_url[-1] == '/':
+        messages.warning(request,
+                         f"You can't upload a file here. {resource_url} is not a container")
+    else:
+        fn = request.FILES['resource_to_pod'].name
+        data = request.FILES['resource_to_pod'].read()
+        new_resource_url = resource_url + fn
+        if not is_session_active(state_session.get('expires_at')):
+            redirect_view = reverse('pod_session:resource_view') + f'?url={resource_url}'
+            refresh_token_view = reverse('connector:session-refresh-token')
+            refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
+            messages.warning(request,
+                             f"Please, try again.")
+            return redirect(refresh_token_query)
+        headers = get_headers(access_token=state_session['access_token'],
+                              DPoP_key=state_session['DPoP_key'],
+                              url=resource_url,
+                              method='POST')
+        api = SolidAPI(headers=headers)
+        resp = api.post_file(url=new_resource_url, content=data, content_type=request.FILES['resource_to_pod'].content_type)  #, headers=headers)
+        if resp.status_code == 401:
+            messages.warning(request,
+                             f"Got 401 trying to post {new_resource_url} . You are not authorized to proceed.")
+        elif resp.status_code != 201 and resp.status_code != 200:
+            messages.warning(request, f"Error: {resp.status_code} {resp.text}")
+        else:  # resp.status_code == 201:
+            messages.success(request, f"{fn} uploaded to {resource_url}")
+    view_url = reverse('pod_session:resource_view')
+    return HttpResponseRedirect(f'{view_url}?url={resource_url}')
+
+
+def resource_delete(request):
     state_session = request.session.get('state_session')
     resource_url = request.GET.get("url")
     redirect_url = resource_url
@@ -135,7 +171,7 @@ def delete_resource(request):
     redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
     if not is_session_active(state_session.get('expires_at')):
         print('delete not active session')
-        redirect_view = reverse('pod_session:delete_resource') + f'?url={resource_url}'
+        redirect_view = reverse('pod_session:resource_delete') + f'?url={resource_url}'
         refresh_token_view = reverse('connector:session-refresh-token')
         refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
         return redirect(refresh_token_query)
