@@ -29,11 +29,16 @@ def decode_access_token(access_token):
     return jwcrypto.jwt.JWT(jwt=access_token)
 
 
-def get_headers(access_token, DPoP_key, lookup_url, method):
-    keypair = jwcrypto.jwk.JWK.from_json(DPoP_key)
+# def get_headers(access_token, DPoP_key, lookup_url, method):
+#     keypair = jwcrypto.jwk.JWK.from_json(DPoP_key)
+#     return {
+#         'Authorization': ('DPoP ' + access_token),
+#         'DPoP': make_token_for(keypair, lookup_url,  method)
+#     }
+def get_headers(access_token, url, method):
     return {
         'Authorization': ('DPoP ' + access_token),
-        'DPoP': make_token_for(keypair, lookup_url,  method)
+        'DPoP': make_DPoP(url, method)
     }
 
 
@@ -70,6 +75,28 @@ def make_token_for(keypair, uri, method):
     return jwt.serialize()
 
 
+def make_DPoP(url, method):
+    # Generate a key-pair.
+    keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
+    # return make_token_for(keypair, token_endpoint, method)
+    jwt = jwcrypto.jwt.JWT(header={
+        "typ":
+        "dpop+jwt",
+        "alg":
+        "ES256",
+        "jwk":
+        keypair.export(private_key=False, as_dict=True)
+    },
+                           claims={
+                               "jti": make_random_string(),
+                               "htm": method,
+                               "htu": url,
+                               "iat": int(datetime.now().timestamp())
+                           })
+    jwt.make_signed_token(keypair)
+    return jwt.serialize()
+
+
 def get_web_id(access_token):
     decoded_access_token = jwcrypto.jwt.JWT(jwt=access_token)
     web_id = json.loads(
@@ -94,6 +121,15 @@ def provider_discovery(provider_url):
 
 
 def client_registration(**kwargs):
+    """
+    Function to perform client registration using the oic package
+    :param kwargs:
+    state
+    registration_endpoint
+    :return:
+    session_updt for connector.views.connect_oidc or False if error. Ignored in pod_session.views
+    query string for auth query
+    """
     print(f'client_registration: {kwargs}')
     state_session = kwargs.get('state_session')
     if state_session:
@@ -134,7 +170,7 @@ def client_registration(**kwargs):
         #     state_session.save()
 
     except Exception as e:
-        return False, e
+        return False, f"Unable to register the client {endpoint} because the client returned the message: {e}"
 
     # 4) Authentication Request
     args = {

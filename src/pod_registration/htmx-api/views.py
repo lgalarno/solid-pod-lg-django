@@ -64,7 +64,7 @@ def delete_webid(request, pk):
 
 
 def create_pod(request):
-    print('create_issuer')
+    print('create_pod')
     form = SolidPodForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():

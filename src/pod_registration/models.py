@@ -97,6 +97,6 @@ class StateSession(models.Model):
             return None
 
     def refresh_token_query(self, redirect_view):
-        refresh_token_view = reverse('connector:refesh-token')
+        refresh_token_view = reverse('connector:refresh-token')
         refresh_token_query = f'{refresh_token_view}?session_pk={self.pk}&redirect_uri={redirect_view}'
         return refresh_token_query

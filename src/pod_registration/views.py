@@ -2,19 +2,16 @@ from django.contrib import messages
 from django.shortcuts import render, reverse, get_object_or_404, HttpResponseRedirect, HttpResponse, redirect
 from django.views.decorators.http import require_http_methods
 
-from datetime import datetime
 from pathlib import Path
 
 from connector.solid_api import SolidAPI
-from connector.views import refresh_token
 from connector.oidc import get_headers
 
-from .models import OpenIDprovider,  SolidPod, StateSession
+from .models import SolidPod, StateSession
 
 # Create your views here.
 
 
-# TODO login with web id with select
 def dashboard(request):
     # sessions = StateSession.objects.filter(user=request.user)  # contains WebID
     sessions = StateSession.objects.with_webid(user=request.user)
@@ -52,9 +49,13 @@ def view_resource(request, pk):
             refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
             return redirect(refresh_token_query)
 
+        # headers = get_headers(access_token=state_session.access_token,
+        #                       DPoP_key=state_session.DPoP_key,
+        #                       lookup_url=lookup_url,
+        #                       method='GET')
         headers = get_headers(access_token=state_session.access_token,
-                              DPoP_key=state_session.DPoP_key,
-                              lookup_url=lookup_url,
+                              # DPoP_key=state_session.DPoP_key,
+                              url=lookup_url,
                               method='GET')
         api = SolidAPI(headers=headers)  # , pod=pod.url)
         resp = api.get(url=lookup_url)
@@ -119,8 +120,8 @@ def create_resource(request, pk):
         data = request.FILES['to_pod'].read()
         new_resource_url = lookup_url + fn
         headers = get_headers(access_token=state_session.access_token,
-                              DPoP_key=state_session.DPoP_key,
-                              lookup_url=lookup_url,
+                              # DPoP_key=state_session.DPoP_key,
+                              url=lookup_url,
                               method='POST')
         # request = refresh_token(request=request, state_session=state_session)
         if not state_session.is_active:
@@ -159,9 +160,10 @@ def delete_resource(request, pk):
     redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
 
     headers = get_headers(access_token=state_session.access_token,
-                          DPoP_key=state_session.DPoP_key,
-                          lookup_url=lookup_url,
+                          #DPoP_key=state_session.DPoP_key,
+                          url=lookup_url,
                           method='DELETE')
+
     # request = refresh_token(request=request, state_session=state_session)
     if not state_session.is_active:
         redirect_view = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={lookup_url}'

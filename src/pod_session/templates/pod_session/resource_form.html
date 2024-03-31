@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    {% include 'pod_session/partials/pod_login_status.html' %}
+    <br>
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10 p-3 mb-2">
+            <p>View a pod content</p>
+            <form method="post" action="{% url 'pod_session:resource_view' %}">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="submit"><i class="fa-regular fa-eye"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

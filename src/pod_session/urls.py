@@ -7,5 +7,6 @@ app_name = 'pod_session'
 
 urlpatterns = [
     path('connect/', views.connect_oidc, name="connect_oidc"),
-    path('pod/', views.pod, name="pod"),
+    path('resource-form/', views.resource_form, name="resource_form"),
+    path('resource-view/', views.resource_view, name="resource_view"),
 ]
