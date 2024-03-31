@@ -29,16 +29,11 @@ def decode_access_token(access_token):
     return jwcrypto.jwt.JWT(jwt=access_token)
 
 
-# def get_headers(access_token, DPoP_key, lookup_url, method):
-#     keypair = jwcrypto.jwk.JWK.from_json(DPoP_key)
-#     return {
-#         'Authorization': ('DPoP ' + access_token),
-#         'DPoP': make_token_for(keypair, lookup_url,  method)
-#     }
-def get_headers(access_token, url, method):
+def get_headers(access_token, DPoP_key, url, method):
+    keypair = jwcrypto.jwk.JWK.from_json(DPoP_key)
     return {
         'Authorization': ('DPoP ' + access_token),
-        'DPoP': make_DPoP(url, method)
+        'DPoP': make_token_for(keypair, url,  method)
     }
 
 
@@ -69,28 +64,6 @@ def make_token_for(keypair, uri, method):
                                "jti": make_random_string(),
                                "htm": method,
                                "htu": uri,
-                               "iat": int(datetime.now().timestamp())
-                           })
-    jwt.make_signed_token(keypair)
-    return jwt.serialize()
-
-
-def make_DPoP(url, method):
-    # Generate a key-pair.
-    keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
-    # return make_token_for(keypair, token_endpoint, method)
-    jwt = jwcrypto.jwt.JWT(header={
-        "typ":
-        "dpop+jwt",
-        "alg":
-        "ES256",
-        "jwk":
-        keypair.export(private_key=False, as_dict=True)
-    },
-                           claims={
-                               "jti": make_random_string(),
-                               "htm": method,
-                               "htu": url,
                                "iat": int(datetime.now().timestamp())
                            })
     jwt.make_signed_token(keypair)
@@ -178,7 +151,7 @@ def client_registration(**kwargs):
         "response_type": "code",
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
-        "scope": ["openid offline_access"],
+        "scope": ["openid webid offline_access"],
         "redirect_uri": _OID_CALLBACK_URI,
         "state": state,
         "prompt": "consent",

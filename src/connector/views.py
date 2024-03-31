@@ -16,8 +16,8 @@ from connector.oidc import (make_token_for,
                             get_web_id,
                             client_registration,
                             make_random_string,
-                            provider_discovery,
-                            make_DPoP)
+                            provider_discovery
+                            )
 
 from pod_registration.models import StateSession, OpenIDprovider
 
@@ -181,7 +181,7 @@ def oauth_callback(request):
         print('state_session TRUE')
 
     # Generate a key-pair.
-    #keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
+    keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
     # Exchange auth code for access token
     resp = requests.post(url=token_endpoint,
                          data={
@@ -194,7 +194,7 @@ def oauth_callback(request):
                          },
                          headers={
                              'content-type': 'application/x-www-form-urlencoded',
-                             'DPoP': make_DPoP(token_endpoint, 'POST')  # make_token_for(keypair, state_session['token_endpoint'], 'POST')
+                             'DPoP': make_token_for(keypair, token_endpoint, 'POST')  # make_DPoP(token_endpoint, 'POST')  #
                          },
                          allow_redirects=False)
     print(f'oauth_callback resp: { resp.json() }')
@@ -210,11 +210,12 @@ def oauth_callback(request):
             state_session['expires_at'] = timezone.make_aware(expires_at, pytz.UTC, True).timestamp()
             state_session['token_type'] = resp_json.get('token_type')
             state_session['refresh_token'] = resp_json.get('refresh_token')
+            state_session['DPoP_key'] = keypair.export()
             request.session['state_session'] = state_session
             # request.session['aaa'] = 'aaa'  # dummy for request.session to be saved...
         else:
             print('registration login')
-            web_id = _update_state_session(resp, state_session_obj)
+            web_id = _update_state_session(resp, state_session=state_session_obj, keypair=keypair)
             #TODO move session_pk and web_id to request.session['state_session'] like above
             request.session['session_pk'] = state_session_obj.pk
             request.session['web_id'] = web_id
@@ -298,6 +299,8 @@ def session_refresh_token(request):
     redirect_uri = request.GET.get('redirect_uri')
     state_session = request.session.get('state_session')  # previously set in connect_oidc_session
     token_endpoint = state_session['token_endpoint']
+    # Generate a key-pair.
+    keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
     resp = requests.post(url=token_endpoint,
                          data={
                              "grant_type": "refresh_token",
@@ -307,11 +310,10 @@ def session_refresh_token(request):
                          },
                          headers={
                              'content-type': 'application/x-www-form-urlencoded',
-                             'DPoP': make_DPoP(token_endpoint, 'POST')
+                             'DPoP':  make_token_for(keypair, 'token_endpoint', 'POST')
                          },
                          allow_redirects=False)
     print(f'session_refresh_token resp: {resp.json()}')
-
     # update state_session
     if resp.status_code == 200:
         resp_json = resp.json()
@@ -323,6 +325,7 @@ def session_refresh_token(request):
         state_session['expires_at'] = timezone.make_aware(expires_at, pytz.UTC, True).timestamp()
         state_session['token_type'] = resp_json.get('token_type')
         state_session['refresh_token'] = resp_json.get('refresh_token')
+        state_session['DPoP_key'] = keypair.export()
         request.session['state_session'] = state_session
     else:
         try:
@@ -343,7 +346,7 @@ def session_refresh_token(request):
 
 
 #TODO state_session now a dict
-def _update_state_session(response, state_session) -> str:
+def _update_state_session(response, state_session, keypair) -> str:
     try:
         resp = response.json()
         # update state_session with tokens from the exchange
@@ -352,7 +355,7 @@ def _update_state_session(response, state_session) -> str:
 
         state_session.access_token = at
         state_session.id_token = resp.get('id_token')
-        # state_session.DPoP_key = keypair.export()
+        state_session.DPoP_key = keypair.export()
         state_session.webid = web_id
 
         expires_at = datetime.utcnow() + timedelta(seconds=resp.get('expires_in'))

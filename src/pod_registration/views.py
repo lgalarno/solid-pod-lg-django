@@ -49,12 +49,8 @@ def view_resource(request, pk):
             refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
             return redirect(refresh_token_query)
 
-        # headers = get_headers(access_token=state_session.access_token,
-        #                       DPoP_key=state_session.DPoP_key,
-        #                       lookup_url=lookup_url,
-        #                       method='GET')
         headers = get_headers(access_token=state_session.access_token,
-                              # DPoP_key=state_session.DPoP_key,
+                              DPoP_key=state_session.DPoP_key,
                               url=resource_url,
                               method='GET')
         api = SolidAPI(headers=headers)  # , pod=pod.url)
@@ -120,7 +116,7 @@ def create_resource(request, pk):
         data = request.FILES['to_pod'].read()
         new_resource_url = resource_url + fn
         headers = get_headers(access_token=state_session.access_token,
-                              # DPoP_key=state_session.DPoP_key,
+                              DPoP_key=state_session.DPoP_key,
                               url=resource_url,
                               method='POST')
         # request = refresh_token(request=request, state_session=state_session)
@@ -160,7 +156,7 @@ def delete_resource(request, pk):
     redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
 
     headers = get_headers(access_token=state_session.access_token,
-                          #DPoP_key=state_session.DPoP_key,
+                          DPoP_key=state_session.DPoP_key,
                           url=resource_url,
                           method='DELETE')
 

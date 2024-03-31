@@ -83,7 +83,7 @@ def resource_view(request):
             return redirect(refresh_token_query)
         print('active session')
         headers = get_headers(access_token=state_session['access_token'],
-                              # DPoP_key=state_session.DPoP_key,
+                              DPoP_key=state_session['DPoP_key'],
                               url=resource_url,
                               method='GET')
         api = SolidAPI(headers=headers)  # , pod=pod.url)
