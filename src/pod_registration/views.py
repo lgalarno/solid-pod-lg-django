@@ -115,18 +115,17 @@ def create_resource(request, pk):
         fn = request.FILES['to_pod'].name
         data = request.FILES['to_pod'].read()
         new_resource_url = resource_url + fn
+        if not state_session.is_active:
+            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:update_resource',
+                                                                                          kwargs={'pk': pk})
+                                                                    )
+            # messages.warning(request,
+            #                  f"Please, try again.")
+            return redirect(refresh_token_query)
         headers = get_headers(access_token=state_session.access_token,
                               DPoP_key=state_session.DPoP_key,
                               url=resource_url,
                               method='POST')
-        # request = refresh_token(request=request, state_session=state_session)
-        if not state_session.is_active:
-            refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:view_resource',
-                                                                                          kwargs={'pk': pk})
-                                                                    )
-            messages.warning(request,
-                             f"Please, try again.")
-            return redirect(refresh_token_query)
 
         api = SolidAPI(headers=headers)
         resp = api.post_file(url=new_resource_url, content=data, content_type=request.FILES['to_pod'].content_type)  #, headers=headers)
@@ -154,18 +153,16 @@ def delete_resource(request, pk):
     if redirect_url[-1] == '/':
         redirect_url = redirect_url[:-1]
     redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
+    # request = refresh_token(request=request, state_session=state_session)
+    if not state_session.is_active:
+        redirect_view = reverse('pod_registration:delete_resource', kwargs={'pk': pk}) + f'?url={resource_url}'
+        refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
+        return redirect(refresh_token_query)
 
     headers = get_headers(access_token=state_session.access_token,
                           DPoP_key=state_session.DPoP_key,
                           url=resource_url,
                           method='DELETE')
-
-    # request = refresh_token(request=request, state_session=state_session)
-    if not state_session.is_active:
-        redirect_view = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={resource_url}'
-        refresh_token_query = state_session.refresh_token_query(redirect_view=redirect_view)
-        return redirect(refresh_token_query)
-
     api = SolidAPI(headers=headers)
     resp = api.delete(url=resource_url)  #, headers=headers)
 

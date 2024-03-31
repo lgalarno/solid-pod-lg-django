@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404
+from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404, HttpResponseRedirect
 
 from pathlib import Path
 
@@ -65,19 +65,18 @@ def resource_view(request):
     resource_content = None
     state_session = request.session.get('state_session')
     if request.method == 'GET':
-        resource_url = request.GET.get("resource_url")
+        resource_url = request.GET.get("url")
     elif request.method == 'POST':
         resource_url = request.POST.get('resource_url')
-
+    print(resource_url)
     context = {
         'title': 'view_resource',
         'resource_url': resource_url
     }
-    print('resource_url session')
     if resource_url:
         if not is_session_active(state_session.get('expires_at')):
             print('not active session')
-            redirect_view = reverse('pod_session:resource_view') + f'?resource_url={resource_url}'
+            redirect_view = reverse('pod_session:resource_view') + f'?url={resource_url}'
             refresh_token_view = reverse('connector:session-refresh-token')
             refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
             return redirect(refresh_token_query)
@@ -105,11 +104,11 @@ def resource_view(request):
                 # folder_data.view_parent_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
-                        f.view_url = reverse('pod_session:resource_view') + f'?resource_url={f.url}'
-                        f.del_url = reverse('pod_session:resource_view') + f'?resource_url={f.url}'
+                        f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
+                        f.del_url = reverse('pod_session:delete_resource') + f'?url={f.url}'
                     for f in folder_data.files:
-                        f.view_url = reverse('pod_session:resource_view') + f'?resource_url={f.url}'
-                        f.del_url = reverse('pod_session:resource_view') + f'?resource_url={f.url}'
+                        f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
+                        f.del_url = reverse('pod_session:delete_resource') + f'?url={f.url}'
                     context['folder_data'] = folder_data
                 else:  # content_type.startswith('application'):
                     fn = Path(resource_url).name
@@ -125,3 +124,37 @@ def resource_view(request):
                   'pod_session/resource_view.html',
                   context=context
                   )
+
+
+def delete_resource(request):
+    state_session = request.session.get('state_session')
+    resource_url = request.GET.get("url")
+    redirect_url = resource_url
+    if redirect_url[-1] == '/':
+        redirect_url = redirect_url[:-1]
+    redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
+    if not is_session_active(state_session.get('expires_at')):
+        print('delete not active session')
+        redirect_view = reverse('pod_session:delete_resource') + f'?url={resource_url}'
+        refresh_token_view = reverse('connector:session-refresh-token')
+        refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
+        return redirect(refresh_token_query)
+
+    headers = get_headers(access_token=state_session['access_token'],
+                          DPoP_key=state_session['DPoP_key'],
+                          url=resource_url,
+                          method='DELETE')
+
+    print('delete active session')
+    api = SolidAPI(headers=headers)
+    resp = api.delete(url=resource_url)  #, headers=headers)
+
+    if resp.status_code == 401:
+        messages.warning(request,
+                         f"Got 401 trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif resp.status_code != 205 and resp.status_code != 200:  # reset content
+        messages.warning(request, f"Error: {resp.status_code} {resp.text}")
+    else:  # resp.status_code == 205
+        messages.success(request, f"{resource_url}  deleted.")
+    view_url = reverse('pod_session:resource_view')
+    return HttpResponseRedirect(f'{view_url}?url={redirect_url}')

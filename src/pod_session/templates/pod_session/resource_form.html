@@ -10,7 +10,7 @@
             <form method="post" action="{% url 'pod_session:resource_view' %}">
                 {% csrf_token %}
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}">
+                    <input type="text" class="form-control" name="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}" required>
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="submit"><i class="fa-regular fa-eye"></i></button>
                     </div>
