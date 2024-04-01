@@ -53,9 +53,7 @@ def connect_oidc(request):
 
 
 def resource_form(request):
-    print('resource_form')
     state_session = request.session.get('state_session')
-    print(state_session)
     context = {
         'session': state_session
     }
@@ -66,9 +64,9 @@ def resource_view(request):
     resource_content = None
     state_session = request.session.get('state_session')
     if request.method == 'GET':
-        resource_url = request.GET.get("url")
+        resource_url = request.GET.get("url").strip()
     elif request.method == 'POST':
-        resource_url = request.POST.get('resource_url')
+        resource_url = request.POST.get('resource_url').strip()
     context = {
         'title': 'view_resource',
         'resource_url': resource_url
