@@ -218,6 +218,7 @@ class SolidAPI:
         return parsed_folder
 
     def read_folder_offline(self, url=None, ttl=None, pod=None, options: ReadFolderOptions = ReadFolderOptions()) -> FolderData:
+        print(f'pod: {pod}')
         parsed_folder = parse_folder_response(url=url, text=ttl, pod=pod)
         if options.links in (LINKS.INCLUDE_POSSIBLE, LINKS.INCLUDE):
             raise Exception('Not implemented')

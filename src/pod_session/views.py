@@ -69,19 +69,16 @@ def resource_view(request):
         resource_url = request.GET.get("url")
     elif request.method == 'POST':
         resource_url = request.POST.get('resource_url')
-    print(resource_url)
     context = {
         'title': 'view_resource',
         'resource_url': resource_url
     }
     if resource_url:
         if not is_session_active(state_session.get('expires_at')):
-            print('not active session')
             redirect_view = reverse('pod_session:resource_view') + f'?url={resource_url}'
             refresh_token_view = reverse('connector:session-refresh-token')
             refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
             return redirect(refresh_token_query)
-        print('active session')
         headers = get_headers(access_token=state_session['access_token'],
                               DPoP_key=state_session['DPoP_key'],
                               url=resource_url,
@@ -100,8 +97,7 @@ def resource_view(request):
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if 'text/turtle' in content_type:
-                folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=resource_url)
-                print(folder_data)
+                folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content)
                 # folder_data.view_parent_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
@@ -111,14 +107,14 @@ def resource_view(request):
                         f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
                         f.del_url = reverse('pod_session:resource_delete') + f'?url={f.url}'
                     context['folder_data'] = folder_data
-                else:  # content_type.startswith('application'):
-                    fn = Path(resource_url).name
-                    response = HttpResponse(
-                        resp.content,
-                        content_type=resp.headers.get('Content-Type'),
-                        headers={f'Content-Disposition': f"attachment; filename = {fn}"},
-                    )
-                    return response
+            else:  # content_type.startswith('application'):
+                fn = Path(resource_url).name
+                response = HttpResponse(
+                    resp.content,
+                    content_type=resp.headers.get('Content-Type'),
+                    headers={f'Content-Disposition': f"attachment; filename = {fn}"},
+                )
+                return response
         context['resource_content'] = resource_content
         context['resource_url'] = resource_url
     return render(request,

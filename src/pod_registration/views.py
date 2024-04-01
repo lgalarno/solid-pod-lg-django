@@ -69,10 +69,8 @@ def view_resource(request, pk):
             pod.viewed()
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
-            print(content_type)
             if 'text/turtle' in content_type:
                 folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=pod.url)
-                print(folder_data)
                 # folder_data.view_parent_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
@@ -94,7 +92,6 @@ def view_resource(request, pk):
 
         context['resource_content'] = resource_content
         context['lookup_url'] = resource_url
-    print(f'contest: {context}')
     return render(request,
                   'pod_registration/view_resource.html',
                   context=context

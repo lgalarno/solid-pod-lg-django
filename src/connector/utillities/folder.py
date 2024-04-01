@@ -48,8 +48,11 @@ def parse_folder_response(text, url, pod):
     item.name = '../'  # get_item_name(this) Parent url
     if url == pod:
         item.url = this
+        print('url == pod')
     else:
         item.url = get_parent_url(url)
+        print('url != pod')
+    print(item.url)
     item.itemType = 'Container' if is_container(this) else 'Resource'
     cat = folders if is_container(this) else files
     cat.append(item)
