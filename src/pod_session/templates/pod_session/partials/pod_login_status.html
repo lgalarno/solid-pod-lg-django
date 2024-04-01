@@ -4,6 +4,7 @@
         {% if request.session.state_session.web_id %}
             <div class="bg-dark text-white p-3 mb-2 rounded shadow-sm">
                 <p >You are logged in as {{ request.session.state_session.web_id }}.
+                <a href="{% url 'connector:disconnect-webid' %}" class="btn btn-dark btn-sm float-end">Disconnect</a>
             </div>
         {% else %}
             <div class="bg-secondary text-white p-3 mb-2 rounded shadow-sm">

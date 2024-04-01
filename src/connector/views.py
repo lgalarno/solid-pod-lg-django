@@ -76,6 +76,11 @@ def connect_webid(request, pk):
 def disconnect_webid(request):
     request.session['web_id'] = None
     request.session['session_pk'] = None
+    return redirect('home')
+
+
+def disconnect_session(request):
+    request.session['state_session'] = None
     return redirect('pod_registration:dashboard')
 
 

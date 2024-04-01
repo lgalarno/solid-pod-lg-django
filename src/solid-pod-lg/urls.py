@@ -29,7 +29,7 @@ sitemaps = {
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", TemplateView.as_view(template_name='index.html'), name="main"),
+    path("", TemplateView.as_view(template_name='index.html'), name="home"),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),),
     # TODO about page
     path('about/', TemplateView.as_view(template_name="index.html"), name="about"),
