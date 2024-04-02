@@ -32,7 +32,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name='index.html'), name="home"),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),),
     # TODO about page
-    path('about/', TemplateView.as_view(template_name="index.html"), name="about"),
+    path('about/', TemplateView.as_view(template_name="about.html"), name="about"),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('account/', include('accounts.urls', namespace="accounts")),
     path('pod-registration/', include('pod_registration.urls', namespace="pod_registration")),
