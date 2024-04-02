@@ -14,21 +14,6 @@
         </div>
     </div>
 
-    <div class="row justify-content-md-center">
-        <div class="col col-md-6">
-            <p>Connect with a Web Id provider</p>
-            <form method="post" action="{% url 'connector:connect_session' %}">
-                {% csrf_token %}
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="issuer_url" placeholder="Web Id Provider url" aria-label="Web Id Provider url" aria-describedby="basic-addon2" required>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" title="Connect" type="submit"><i class="fa-solid fa-plug"></i></button>
-                    </div>
-                </div>
-{#                <input type="text" class="form-control" name="issuer_url" placeholder="Web Id Provider url" value="{{ issuer_url }}" aria-label="WebId Provider url" aria-describedby="basic-addon2" required>#}
-{#                <br>#}
-{#                <button type="submit" class="btn btn-primary"> View  </button>#}
-            </form>
-        </div>
-    </div>
+    {% include 'pod_session/partials/issuer_form.html' %}
+
 {% endblock %}
