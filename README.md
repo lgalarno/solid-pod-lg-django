@@ -22,6 +22,7 @@ This is the repository for the Solid Pod LG
 3. Download files (not ttl)
 4. Upload Files
 5. Delete Files
+6. User dashboard where a user can manage their webIds and solid pods
 
 ### Installation Instructions ###
 
