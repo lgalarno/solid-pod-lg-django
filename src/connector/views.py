@@ -264,9 +264,10 @@ def refresh_token(request):
         # update state_session
         if resp.status_code == 200:
             # update state_session with tokens from the exchange
-            web_id = _update_state_session(resp, state_session_obj)
-            request.session['web_id'] = web_id
+            web_id = _update_state_session(resp, state_session=state_session_obj, keypair=keypair)
+            #TODO move session_pk and web_id to request.session['state_session'] like above
             request.session['session_pk'] = state_session_obj.pk
+            request.session['web_id'] = web_id
         else:
             try:
                 # api response
