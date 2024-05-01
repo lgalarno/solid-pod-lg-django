@@ -1,25 +1,27 @@
 {% if messages %}
     <div class="row justify-content-md-center">
         <div class="col col-sm-10">
-{#            <ul class="messages">#}
-                {% for message in messages %}
-                    {% if "html_safe" in message.tags %}
-                        <pre>{{ message|safe }}</pre>
-                    {% else %}
-                        <div class= "{{ message.tags }}">
-                            {{ message }}
-                        </div>                        
-                    {% endif %}
-{#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>#}
-{#                        {% if "html_safe" in message.tags %}#}
-{#                            <pre>{{ message|safe }}</pre>#}
-{#                        {% else %}#}
-{#                            <pre>{{ message|safe }}</pre>#}
-{#                        {% endif %}#}
-{#                    </li>#}
-                {% endfor %}
-{#            </ul>#}
-            <br>
+            <div class="messages">
+    {#            <ul class="messages">#}
+                    {% for message in messages %}
+                        {% if "html_safe" in message.tags %}
+                            <pre>{{ message|safe }}</pre>
+                        {% else %}
+                            <p class= "alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </p>                        
+                        {% endif %}
+    {#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>#}
+    {#                        {% if "html_safe" in message.tags %}#}
+    {#                            <pre>{{ message|safe }}</pre>#}
+    {#                        {% else %}#}
+    {#                            <pre>{{ message|safe }}</pre>#}
+    {#                        {% endif %}#}
+    {#                    </li>#}
+                    {% endfor %}
+    {#            </ul>#}
+                <br>
+            </div>  
         </div>  
     </div>
 {% endif %}
