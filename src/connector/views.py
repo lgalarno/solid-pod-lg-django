@@ -117,7 +117,7 @@ def connect_oidc(request):
     else:
         if state_session.client_id == "" or state_session.client_id is None:
             state_session.delete()
-        messages.error(request, f"Error: {query}")
+        messages.error(request, f"Error: {query}", extra_tags='html_safe')
         return redirect('pod_registration:dashboard')
 
 
@@ -147,7 +147,7 @@ def connect_oidc_session(request):
                     auth_query = authorization_endpoint + query
                     return redirect(auth_query)
                 else:
-                    messages.error(request, f"Error: {query}")
+                    messages.error(request, f"Error: {query}", extra_tags='html_safe')
             else:
                 messages.error(request,f"Invalid issuer. {provider_info}")
         except:
@@ -170,7 +170,6 @@ def oauth_callback(request):
     state = request.GET.get('state', None)
     state_session_obj = StateSession.objects.filter(state=state).first()  # if exists in db, then use pod registration model
     if state_session_obj:
-        print('state_session FALSE')
         state_session = model_to_dict(state_session_obj)
         provider_info = state_session_obj.oicdp.provider_info
         token_endpoint = provider_info['token_endpoint']
@@ -179,8 +178,6 @@ def oauth_callback(request):
         state_session = request.session.get('state_session')  # previously set in connect_oidc_session
         token_endpoint = state_session['token_endpoint']
         session_login = True
-        print('state_session TRUE')
-
     # Generate a key-pair.
     keypair = jwcrypto.jwk.JWK.generate(kty='EC', crv='P-256')
     # Exchange auth code for access token
@@ -198,7 +195,6 @@ def oauth_callback(request):
                              'DPoP': make_token_for(keypair, token_endpoint, 'POST')
                          },
                          allow_redirects=False)
-    print(f'oauth_callback resp: { resp.json() }')
     if resp.status_code == 200:
         # update state_session with tokens from the exchange and web_id
         if session_login:
@@ -234,7 +230,7 @@ def oauth_callback(request):
             messages.error(request, f"Error: {error} {name} {message} {description}")
         except:
             # web server response
-            messages.error(request, resp.text)
+            messages.error(request, resp.text, extra_tags='html_safe')
     return HttpResponseRedirect(state_session['redirect_view'])
 
 
@@ -263,7 +259,7 @@ def refresh_token(request):
                                  'DPoP':  make_token_for(keypair, provider_info['token_endpoint'], 'POST')
                              },
                              allow_redirects=False)
-        print(f'oauth_callback resp: {resp.json()}')
+        # print(f'oauth_callback resp: {resp.json()}')
 
         # update state_session
         if resp.status_code == 200:
@@ -287,7 +283,7 @@ def refresh_token(request):
                 messages.error(request, f"Error: {error} {name} {message} {description}")
             except:
                 # web server response
-                messages.error(request, resp.text)
+                messages.error(request, resp.text, extra_tags='html_safe')
 
     return redirect(redirect_uri)  # request
 
@@ -310,7 +306,7 @@ def session_refresh_token(request):
                              'DPoP':  make_token_for(keypair, 'token_endpoint', 'POST')
                          },
                          allow_redirects=False)
-    print(f'session_refresh_token resp: {resp.json()}')
+
     # update state_session
     if resp.status_code == 200:
         resp_json = resp.json()
@@ -337,7 +333,7 @@ def session_refresh_token(request):
             messages.error(request, f"Error: {error} {name} {message} {description}")
         except:
             # web server response
-            messages.error(request, resp.text)
+            messages.error(request, resp.text, extra_tags='html_safe')
 
     return redirect(redirect_uri)  # request
 
