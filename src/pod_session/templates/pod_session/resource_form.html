@@ -2,15 +2,17 @@
 {% load static %}
 
 {% block content %}
-    {% include 'pod_session/partials/pod_login_status.html' %}
+    {% include 'pod_session/partials/oidc_login_status.html' %}
     <br>
     <div class="row justify-content-md-center">
         <div class="col col-sm-10 p-3 mb-2">
-            <p>View a pod content</p>
+            <p>View a Solid pod content</p>
             <form method="post" action="{% url 'pod_session:resource_view' %}">
                 {% csrf_token %}
+                <label for="resource_url"><i>*** note that the full URL of the resources you are looking for is required, including the trailing (forwarding) slash ***</i></label>
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}" required>
+
+                    <input type="text" class="form-control" name="resource_url" id="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}" required>
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="submit"><i class="fa-regular fa-eye"></i></button>
                     </div>

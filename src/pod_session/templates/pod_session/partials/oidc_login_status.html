@@ -1,6 +1,6 @@
 <div class="row justify-content-md-center text-center" id="pod-login-status">
     <div class="col col-sm-10 p-3 mb-2 rounded shadow-sm">
-        <h3>Login status</h3>
+        <h3>Identity provider login status</h3>
         {% if request.session.state_session.web_id %}
             <div class="bg-dark text-white p-3 mb-2 rounded shadow-sm">
                 <p >You are logged in as {{ request.session.state_session.web_id }}.

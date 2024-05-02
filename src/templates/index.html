@@ -4,13 +4,13 @@
     <div class="row">
         <div class="col text-center">
             <h2>Welcome to Solid Pod LG</h2>
-            {% if not request.user.is_authenticated %}
+{#            {% if not request.user.is_authenticated %}#}
                 <br>
-                <p>Log in with your account <a href="{% url "accounts:login" %}">log in</a> to access your data!</p>
+                <p>Log in with your account <a href="{% url "accounts:login" %}">log in</a> to access your dashboard</p>
                 <p>Need an account? Please <a href={% url 'accounts:register' %}>Register</a></p>
                 <br>
                 <p>Or</p>
-            {% endif %}
+{#            {% endif %}#}
         </div>
     </div>
 
