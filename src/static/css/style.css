@@ -28,6 +28,13 @@ a:hover {
   color: #000000;
 }
 
+a.rightmenulink {
+  padding: 0px 5px;
+  word-wrap: normal;
+  display: inline-block;
+  text-decoration: none;
+}
+
 .nav-link {
   color: #666666;
 }

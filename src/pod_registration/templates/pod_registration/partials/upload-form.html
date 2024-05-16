@@ -1,0 +1,21 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'pod_registration:upload_resource' state_session_pk %}" enctype="multipart/form-data" id="formfile" name="formfile" >
+            {% csrf_token %}
+            <input type="hidden" name="lookup_url" value="{{ lookup_url }}"/>
+            <div class="modal-header">
+                <h4>Upload a file</h4>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="file" class="form-control" name="to_pod" id="upload_input" placeholder="Upload file" aria-label="Upload file" aria-describedby="button-addon2" required>
+                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Upload</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+

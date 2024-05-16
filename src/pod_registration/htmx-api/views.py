@@ -64,7 +64,6 @@ def delete_webid(request, pk):
 
 
 def create_pod(request):
-    print('create_pod')
     form = SolidPodForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
@@ -98,3 +97,32 @@ def delete_pod(request, pk):
     }
     return render(request, 'pod_registration/partials/pods-list.html', context)
     # return render(request, 'pod_registration/partials/pod-form.html', context)
+
+#####################################################
+# Create resources in pods forms requests
+#####################################################
+
+
+def upload_file_(request):
+    form = OpenIDproviderForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'issuerListChanged'})
+            # form = OpenIDproviderForm()
+    if request.method == "GET":
+        provider_form = request.session.get('provider_form')
+        if provider_form:
+            request.session['provider_form'] = False
+            form = None
+        else:
+            request.session['provider_form'] = True
+    sessions = StateSession.objects.with_webid(user=request.user)  # contains WebID
+    oidcps = OpenIDprovider.objects.all()
+    context = {
+        "title": "create-webid",
+        'form_provider': form,
+        'sessions': sessions,  # contains WebID
+        'oidcps': oidcps,
+    }
+    return render(request, 'pod_registration/partials/issuer-form.html', context)

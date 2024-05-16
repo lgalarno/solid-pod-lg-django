@@ -27,6 +27,11 @@ def dashboard(request):
 
 
 def view_resource(request, pk):
+    """
+    :param request:
+    :param pk: SolidPod pk
+    :return:
+    """
     resource_content = None
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
@@ -98,8 +103,28 @@ def view_resource(request, pk):
                   )
 
 
+#TODO create container
+@require_http_methods(["POST"])
+def create_container(request, pk):
+    state_session_pk = request.session['session_pk']
+    state_session = get_object_or_404(StateSession, pk=state_session_pk)
+    resource_url = request.POST.get("lookup_url")
+
+
 @require_http_methods(["POST"])
 def create_resource(request, pk):
+    state_session_pk = request.session['session_pk']
+    state_session = get_object_or_404(StateSession, pk=state_session_pk)
+    resource_url = request.POST.get("lookup_url")
+
+
+@require_http_methods(["POST"])
+def upload_resource(request, pk):
+    """
+    :param request:
+    :param pk: SolidPod pk
+    :return:
+    """
     state_session_pk = request.session['session_pk']
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
     resource_url = request.POST.get("lookup_url")
