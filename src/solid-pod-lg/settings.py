@@ -159,7 +159,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # LOGIN/LOGOUT REDIRECT
 ######################################################################
 LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/'
+LOGIN_URL = '/account/login/'
+LOGIN_REDIRECT_URL = '/pod_registration/dashboard/'
 
 ######################################################################
 # CRISPY_FORMS
