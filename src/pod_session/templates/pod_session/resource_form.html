@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}-{{ title }}{% endblock %}
+
 {% block content %}
     {% include 'pod_session/partials/oidc_login_status.html' %}
     <br>

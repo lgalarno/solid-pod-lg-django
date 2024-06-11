@@ -55,6 +55,7 @@ def connect_oidc(request):
 def resource_form(request):
     state_session = request.session.get('state_session')
     context = {
+        'title': 'resource-form',
         'session': state_session
     }
     return render(request, 'pod_session/resource_form.html', context)
@@ -68,7 +69,7 @@ def resource_view(request):
     elif request.method == 'POST':
         resource_url = request.POST.get('resource_url').strip()
     context = {
-        'title': 'view_resource',
+        'title': 'view-resource',
         'resource_url': resource_url
     }
     if resource_url:
