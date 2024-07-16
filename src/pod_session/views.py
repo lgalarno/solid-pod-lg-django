@@ -14,8 +14,6 @@ from pod_session.utilities import is_session_active
 
 # Create your views here.
 
-
-#TODO fix oauth_callback to work with pod session
 def connect_oidc(request):
     context = {}
     if request.method == 'POST':
@@ -96,8 +94,7 @@ def resource_view(request):
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if 'text/turtle' in content_type:
-                folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content)
-                # folder_data.view_parent_url = reverse('pod_registration:view_resource', kwargs={'pk': pk}) + f'?url={folder_data.parent}'
+                folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
                         f.view_url = reverse('pod_session:resource_view') + f'?url={f.url}'
@@ -161,11 +158,8 @@ def resource_delete(request):
     state_session = request.session.get('state_session')
     resource_url = request.GET.get("url")
     redirect_url = resource_url
-    if redirect_url[-1] == '/':
-        redirect_url = redirect_url[:-1]
-    redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
+
     if not is_session_active(state_session.get('expires_at')):
-        print('delete not active session')
         redirect_view = reverse('pod_session:resource_delete') + f'?url={resource_url}'
         refresh_token_view = reverse('connector:session-refresh-token')
         refresh_token_query = f'{refresh_token_view}?redirect_uri={redirect_view}'
@@ -176,16 +170,21 @@ def resource_delete(request):
                           url=resource_url,
                           method='DELETE')
 
-    print('delete active session')
     api = SolidAPI(headers=headers)
     resp = api.delete(url=resource_url)  #, headers=headers)
 
     if resp.status_code == 401:
         messages.warning(request,
                          f"Got 401 trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif resp.status_code == 500:
+        messages.error(request,
+                         f"Error: 500 trying to delete {resource_url} .")
     elif resp.status_code != 205 and resp.status_code != 200:  # reset content
         messages.warning(request, f"Error: {resp.status_code} {resp.text}")
     else:  # resp.status_code == 205
+        if redirect_url[-1] == '/':
+            redirect_url = redirect_url[:-1]
+        redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
         messages.success(request, f"{resource_url}  deleted.")
     view_url = reverse('pod_session:resource_view')
     return HttpResponseRedirect(f'{view_url}?url={redirect_url}')

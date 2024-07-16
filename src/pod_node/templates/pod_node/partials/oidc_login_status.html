@@ -1,0 +1,15 @@
+<div class="row justify-content-md-center text-center" id="pod-login-status">
+    <div class="col col-sm-10 p-3 mb-2 rounded shadow-sm">
+        <h3>Identity provider login status</h3>
+        {% if request.session.node_webId and request.user.is_authenticated %}
+            <div class="bg-dark text-white p-3 mb-2 rounded shadow-sm">
+                <p >You are logged in as {{ request.session.node_webId }}.
+                <a href="{% url 'pod_node:logout' %}" title="Disconnect" class="btn btn-dark btn-sm float-end"><i class="fa-solid fa-plug-circle-xmark"></i></a>
+            </div>
+        {% else %}
+            <div class="bg-secondary text-white p-3 mb-2 rounded shadow-sm">
+            <p class="">You need to select a Web ID before viewing a Solid pod.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

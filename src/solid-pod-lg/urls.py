@@ -37,6 +37,7 @@ urlpatterns = [
     path('account/', include('accounts.urls', namespace="accounts")),
     path('pod-registration/', include('pod_registration.urls', namespace="pod_registration")),
     path('pod-session/', include('pod_session.urls', namespace="pod_session")),
+    path('pod-node/', include('pod_node.urls', namespace="pod_node")),
     path('connector/', include('connector.urls', namespace="connector")),
 ]
 

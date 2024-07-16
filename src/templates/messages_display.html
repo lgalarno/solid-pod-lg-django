@@ -7,7 +7,11 @@
                         {% if "html_safe" in message.tags %}
                             <pre>{{ message|safe }}</pre>
                         {% else %}
-                            <p class= "alert alert-{{ message.tags }}">
+                            {% if message.tags == 'error' %}
+                                <p class= "alert alert-danger">
+                            {% else %}
+                                <p class= "alert alert-{{ message.tags }}">
+                            {% endif %}
                                 {{ message }}
                             </p>                        
                         {% endif %}

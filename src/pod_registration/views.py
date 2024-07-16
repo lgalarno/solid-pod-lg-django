@@ -71,7 +71,7 @@ def view_resource(request, pk):
         elif resp.status_code != 200:
             messages.error(request, f"Error: {resp.status_code} {resp.text}")
         else:  # resp.status_code == 200
-            pod.viewed()
+            pod.viewed()  # update last viewed
             resource_content = resp.text
             content_type = resp.headers.get('Content-Type')
             if 'text/turtle' in content_type:
@@ -94,8 +94,7 @@ def view_resource(request, pk):
                     headers={f'Content-Disposition': f"attachment; filename = {fn}"},
                 )
                 return response
-
-        context['resource_content'] = resource_content
+        context['resource_content'] = resource_content  # ttl
         context['lookup_url'] = resource_url
     return render(request,
                   'pod_registration/view_resource.html',
@@ -172,9 +171,6 @@ def delete_resource(request, pk):
     state_session = get_object_or_404(StateSession, pk=state_session_pk)
     resource_url = request.GET.get("url")
     redirect_url = resource_url
-    if redirect_url[-1] == '/':
-        redirect_url = redirect_url[:-1]
-    redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
     # request = refresh_token(request=request, state_session=state_session)
     if not state_session.is_active:
         redirect_view = reverse('pod_registration:delete_resource', kwargs={'pk': pk}) + f'?url={resource_url}'
@@ -187,13 +183,19 @@ def delete_resource(request, pk):
                           method='DELETE')
     api = SolidAPI(headers=headers)
     resp = api.delete(url=resource_url)  #, headers=headers)
-
     if resp.status_code == 401:
         messages.warning(request,
                          f"Got 401 trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif resp.status_code == 500:
+        messages.error(request,
+                         f"Error: 500 trying to delete {resource_url} .")
     elif resp.status_code != 205 and resp.status_code != 200:  # reset content
         messages.warning(request, f"Error: {resp.status_code} {resp.text}")
     else:  # resp.status_code == 205
+        if redirect_url[-1] == '/':
+            redirect_url = redirect_url[:-1]
+        redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
+        print(redirect_url)
         messages.success(request, f"{resource_url}  deleted.")
     read_url = reverse('pod_registration:view_resource', kwargs={'pk': pk})
     return HttpResponseRedirect(f'{read_url}?url={redirect_url}')

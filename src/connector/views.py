@@ -4,7 +4,6 @@ from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404, redirect, HttpResponseRedirect, reverse, render
 from django.utils import timezone
 
-
 from datetime import datetime, timedelta
 
 import httpx

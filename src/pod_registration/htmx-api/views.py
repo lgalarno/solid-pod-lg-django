@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, HttpResponse
 
 from pod_registration.forms import OpenIDproviderForm, SolidPodForm
-
 from pod_registration.models import SolidPod, OpenIDprovider, StateSession
 
 
@@ -19,15 +18,7 @@ def pod_list(request):
     return render(request, 'pod_registration/partials/pods-list.html', context)
 
 
-# def webid_list(request):
-#     context = {
-#         'sessions': StateSession.objects.filter(user=request.user)  # contains WebID
-#     }
-#     return render(request, "pod_registration/partials/webid-list.html", context)
-
-
 def create_issuer(request):
-    print('create_issuer')
     form = OpenIDproviderForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():

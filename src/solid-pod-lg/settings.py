@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'accounts',
     'pod_registration',
     'pod_session',
-    'connector'
+    'connector',
+    "pod_node.apps.PodNodeConfig"
 ]
 
 MIDDLEWARE = [

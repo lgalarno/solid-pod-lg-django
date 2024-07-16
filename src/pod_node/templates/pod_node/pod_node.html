@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}-{{ title }}{% endblock %}
+
+{% block content %}
+    {% include 'pod_node/partials/oidc_login_status.html' %}
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10 p-3 mb-2">
+            <a href="{% url 'pod_node:test' %}" class="ms-2 text-danger">test</a>
+            <a href="{% url 'pod_node:login' %}" class="ms-2">Login</a>
+            <a href="{% url 'pod_node:sessions' %}" class="ms-2">sessions</a>
+            {% if isLoggedIn %}
+                <a href="{% url 'pod_node:view_resource' %}" class="ms-2">view resource</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if request.session.node_isLoggedIn %}
+        <div class="row justify-content-md-center">
+            <div class="col col-sm-10 p-3 mb-2">
+                <p>View a Solid pod content</p>
+                <form method="post" action="{% url 'pod_node:view_resource' %}">
+                    {% csrf_token %}
+                    <label for="resource_url"><i>*** note that the full URL of the resources you are looking for is required, including the trailing (forwarding) slash ***</i></label>
+                    <div class="input-group mb-3">
+
+                        <input type="text" class="form-control" name="resource_url" id="resource_url" placeholder="resource url" aria-label="Solid Pod (resource) url" aria-describedby="basic-addon2" value="{{ resource_url }}" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit"><i class="fa-regular fa-eye"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if resource_content %}
+        <div class="row justify-content-md-center">
+            <div class="col col-sm-10 p-3 mb-2">
+                <pre class="bg-light">{{ resource_content }}</pre>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

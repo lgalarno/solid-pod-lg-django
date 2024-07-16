@@ -67,7 +67,7 @@ class Item:
 
 class FolderData:
     def __init__(self):
-        FolderData
+        self.url = None
         self.name = None
         self.parent = None
         self.view_parent_url = None
@@ -84,7 +84,7 @@ class SolidAPI:
     def __init__(self, headers=None, pod=None):
         self.client = httpx.Client()
         self.headers = headers
-        self.pod = headers
+        self.pod = headers  # ?
 
     def fetch(self, method, url, options: Dict = None) -> Response:
         if not options:
@@ -211,14 +211,12 @@ class SolidAPI:
             url += '/'
         folder_res = self.get(url, {'headers': {'Accept': 'text/turtle'}})
         # use text instead of response
-        parsed_folder = parse_folder_response(text=folder_res.text, url=url)
+        parsed_folder = parse_folder_response(text=folder_res.text, url=url, pod=None)
         if options.links in (LINKS.INCLUDE_POSSIBLE, LINKS.INCLUDE):
             raise Exception('Not implemented')
-
         return parsed_folder
 
     def read_folder_offline(self, url=None, ttl=None, pod=None, options: ReadFolderOptions = ReadFolderOptions()) -> FolderData:
-        print(f'pod: {pod}')
         parsed_folder = parse_folder_response(url=url, text=ttl, pod=pod)
         if options.links in (LINKS.INCLUDE_POSSIBLE, LINKS.INCLUDE):
             raise Exception('Not implemented')

@@ -4,6 +4,7 @@ from connector.utillities.minis import get_item_name, get_parent_url
 
 POSIX = Namespace('http://www.w3.org/ns/posix/stat#')
 LDP = Namespace("http://www.w3.org/ns/ldp#")
+SPACE = Namespace("http://www.w3.org/ns/pim/space#")
 container_types = [URIRef('http://www.w3.org/ns/ldp#Container'), URIRef('http://www.w3.org/ns/ldp#BasicContainer')]
 
 
@@ -16,7 +17,9 @@ container_types = [URIRef('http://www.w3.org/ns/ldp#Container'), URIRef('http://
 def parse_folder_response(text, url, pod):
     # print(text)
     from connector.solid_api import FolderData, Item
-    g = Graph().parse(data=text, publicID=url, format='turtle')
+
+    def is_storage(sub) -> bool:
+        return (sub, RDF.type, SPACE.Storage) in g
 
     def is_type(sub, type) -> bool:
         return (sub, RDF.type, type) in g
@@ -37,6 +40,7 @@ def parse_folder_response(text, url, pod):
             s = None
         return s
 
+    g = Graph().parse(data=text, publicID=url, format='turtle')
     this = URIRef(url)
 
     if not is_container(this):
@@ -46,13 +50,18 @@ def parse_folder_response(text, url, pod):
     folders, files = [], []
     item = Item()  # create parent item
     item.name = '../'  # get_item_name(this) Parent url
-    if url == pod:
+    # if url == pod:
+    #     item.url = this
+    #     print('url == pod')
+    # else:
+    #     item.url = get_parent_url(url)
+    #     print('url != pod')
+    if is_storage(this):
         item.url = this
         print('url == pod')
     else:
         item.url = get_parent_url(url)
         print('url != pod')
-    print(item.url)
     item.itemType = 'Container' if is_container(this) else 'Resource'
     cat = folders if is_container(this) else files
     cat.append(item)

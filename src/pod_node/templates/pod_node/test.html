@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}-{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10 p-3 mb-2">
+            <a href="{% url 'pod_node:test_cookie' %}">test cookie</a>
+            <a href="{% url 'pod_node:new_sessions' %}">new sessions</a>
+            <a href="{% url 'pod_node:sessions' %}">sessions</a>
+        </div>
+    </div>
+{% endblock %}

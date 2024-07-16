@@ -10,11 +10,6 @@
         </tr>
         </thead>
         <tbody>
-{#        <tr>#}
-{#            <td><a href="{{ folder_data.view_parent_url }}" title="{{ folder_data.url }}">../</a></td>#}
-{#            <td></td>#}
-{#            <td></td>#}
-{#        </tr>#}
         {% for f in folder_data.folders %}
             <tr >
                 <td><a href="{{ f.view_url }}" title="{{ f.url }}">{{ f.name }}</a></td>

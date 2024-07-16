@@ -47,12 +47,12 @@ def get_parent_url(url) -> str:
 
 
 def get_item_name(url) -> str:
-    url = remove_slashes_at_end(url)
+    # url = remove_slashes_at_end(url)
 
-    if url.count('/') == 2:  # is base url, no item name
+    if url.count('/') == 3:  # is base url, no item name
         return ''
-
-    i = url.rindex('/')
+    temp = remove_slashes_at_end(url)
+    i = temp.rindex('/')
     return url[i + 1:]
 
 
