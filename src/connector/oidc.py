@@ -103,10 +103,10 @@ def client_registration(**kwargs):
     session_updt for connector.views.connect_oidc or False if error. Ignored in pod_session.views
     query string for auth query
     """
-    print(f'client_registration: {kwargs}')
     state_session = kwargs.get('state_session')
     if state_session:
         endpoint = state_session.oicdp.provider_info['registration_endpoint']
+        state = None
     else:
         endpoint = kwargs.get('registration_endpoint')
         state = kwargs.get('state')
@@ -125,7 +125,6 @@ def client_registration(**kwargs):
         registration_response = client.register(
             endpoint,
             **args)
-        print(f"registration_response: {registration_response}")
         code_verifier, code_challenge = make_verifier_challenge()
         client_id = registration_response.get('client_id')
 
@@ -134,13 +133,6 @@ def client_registration(**kwargs):
             'client_secret': registration_response.get('client_secret'),
             'code_verifier': code_verifier
         }
-
-        # if state_session:
-        #     state = state_session.state
-        #     state_session.client_id = client_id
-        #     state_session.client_secret = registration_response.get('client_secret')
-        #     state_session.code_verifier = code_verifier
-        #     state_session.save()
 
     except Exception as e:
         return False, f"Unable to register the client {endpoint} because the client returned the message: {e}"

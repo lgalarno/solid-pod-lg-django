@@ -23,12 +23,16 @@
         {% endfor %}
         {% for f in folder_data.files %}
             <tr>
-                <td><a href="{{ f.view_url }}" title="{{ f.url }}">{{ f.name }}</a></td>
+                <td><a href="{{ f.preview_url }}" title="{{ f.url }}">{{ f.name }}</a></td>
                 <td><small>{{ f.size }}</small></td>
                 <td>
                     <a href="{{ f.del_url }}" title="delete" class="btn" onclick="return confirm('Are you sure?')">
                         <i class="fa-regular fa-trash-can"></i>
                     </a>
+                    <a href="{{ f.download_url }}" title="download" class="btn" >
+                        <i class="bi bi-box-arrow-down"></i>
+                    </a>
+
                 </td>
             </tr>
         {% endfor %}

@@ -1,0 +1,10 @@
+<div class="row justify-content-md-center">
+    <div class="col col-sm-10 p-3 mb-2">
+        <a href="{% url 'pod_node:test' %}" class="ms-2 text-danger">test</a>
+        <a href="{% url 'pod_node:login' %}" class="ms-2">Login</a>
+        <a href="{% url 'pod_node:sessions' %}" class="ms-2">sessions</a>
+        {% if request.session.node_isLoggedIn %}
+            <a href="{% url 'pod_node:view_resource' %}" class="ms-2">view resource</a>
+        {% endif %}
+    </div>
+</div>

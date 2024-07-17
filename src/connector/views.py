@@ -29,36 +29,6 @@ _CLIENT_URL = settings.CLIENT_URL
 
 # Create your views here.
 
-# @require_http_methods(["POST"])
-# def connect_webid(request):
-#     pk = request.POST.get('session_id')
-#     state_session = get_object_or_404(StateSession, pk=pk)
-#     if state_session.is_active:
-#         request.session['web_id'] = state_session.webid
-#         request.session['session_pk'] = state_session.pk
-#         return redirect('pod_registration:dashboard')
-#     else:
-#         refresh_token_query = state_session.refresh_token_query(redirect_view=reverse('pod_registration:dashboard'))
-#         return redirect(refresh_token_query)
-# def connect_api(request):
-#     issuer_url = 'https://solid.insightdatalg.ca/'
-#     r = httpx.post(url='http://localhost:3030/solid-pod-lg/user', data={'issuer_url': issuer_url})
-#     print(r.json())
-#     redirect_url = r.json()['redirect_url']
-#     return redirect(redirect_url)
-
-
-# def connect_api_callback(request):
-#     print(request.GET)
-#     resp = request.GET
-#     context = {
-#         'r1': resp
-#     }
-#     return render(request,
-#                   'connector/connect-api.html',
-#                   context=context
-#                   )
-
 
 def connect_webid(request, pk):
     # pk = request.POST.get('session_id')

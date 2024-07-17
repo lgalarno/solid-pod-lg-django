@@ -102,7 +102,7 @@ def view_resource(request, pk):
                   )
 
 
-#TODO create container
+#TODO create container and resources
 @require_http_methods(["POST"])
 def create_container(request, pk):
     state_session_pk = request.session['session_pk']

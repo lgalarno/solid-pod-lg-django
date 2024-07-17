@@ -2,28 +2,27 @@
     <div class="row justify-content-md-center">
         <div class="col col-sm-10">
             <div class="messages">
-    {#            <ul class="messages">#}
-                    {% for message in messages %}
-                        {% if "html_safe" in message.tags %}
-                            <pre>{{ message|safe }}</pre>
-                        {% else %}
-                            {% if message.tags == 'error' %}
-                                <p class= "alert alert-danger">
-                            {% else %}
-                                <p class= "alert alert-{{ message.tags }}">
-                            {% endif %}
-                                {{ message }}
-                            </p>                        
+                {% for message in messages %}
+                    {% if "html_safe" in message.tags %}
+                        {% if 'error' in message.tags %}
+                            <pre class="alert alert-danger">
+                        {% elif 'warning' in message.tags %}
+                            <pre class="alert alert-warning">
+                         {% elif 'success' in message.tags %}
+                            <pre class="alert alert-success">
                         {% endif %}
-    {#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>#}
-    {#                        {% if "html_safe" in message.tags %}#}
-    {#                            <pre>{{ message|safe }}</pre>#}
-    {#                        {% else %}#}
-    {#                            <pre>{{ message|safe }}</pre>#}
-    {#                        {% endif %}#}
-    {#                    </li>#}
-                    {% endfor %}
-    {#            </ul>#}
+                            {{ message|safe }}
+                        </pre>
+                    {% else %}
+                        {% if message.tags == 'error' %}
+                            <p class="alert alert-danger">
+                        {% else %}
+                            <p class="alert alert-{{ message.tags }}">
+                        {% endif %}
+                        {{ message }}
+                        </p>                        
+                    {% endif %}
+                {% endfor %}
                 <br>
             </div>  
         </div>  

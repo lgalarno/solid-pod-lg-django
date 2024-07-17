@@ -1,12 +1,17 @@
+from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import render, HttpResponse, redirect, HttpResponseRedirect, reverse
+from django.utils.http import urlencode
 
 from connector.solid_api import SolidAPI
+from connector.utillities.minis import get_parent_url
 
 import httpx
 import requests
 # Create your views here.
+
+_NODE_SERVER_URL = settings.NODE_SERVER_URL
 
 
 def test(request):
@@ -52,8 +57,18 @@ def pod_node(request):
 
 
 def login(request):
-    url = 'http://localhost:3030/solid-pod-lg/login'
-    return HttpResponseRedirect(url)
+    print('login node.js')
+    issuer_url = 'https://login.inrupt.com/'
+    issuer_url = 'https://solid.insightdatalg.ca/'
+    context = {}
+    if request.method == 'POST':
+        issuer_url = request.POST.get('issuer_url').strip()
+        context['issuer_url'] = issuer_url
+        if issuer_url[-1] != '/':
+            issuer_url = issuer_url + '/'
+    login_url = f'{_NODE_SERVER_URL}login/?issuer_url={issuer_url}'
+    print(login_url)
+    return HttpResponseRedirect(login_url)
 
 
 def login_callback(request):
@@ -87,8 +102,7 @@ def view_resource(request):
     }
 
     # resource_url = 'https://solid.insightdatalg.ca/lgalarno/profile/'
-    fetch_url = 'http://localhost:3030/solid-pod-lg/fetch'
-    fetch_url = fetch_url + f'/?sessionId={sessionId}&resource={resource_url}'
+    fetch_url = f'{_NODE_SERVER_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
     print(fetch_url)
     try:
         r = httpx.get(fetch_url)
@@ -97,27 +111,37 @@ def view_resource(request):
                          'No response from solid-pod-lg API')
         return render(request, 'pod_node/pod_node.html', context)
 
-    json_data = r.json()
     if r.status_code == 200:
+        json_data = r.json()
         resource_content = json_data.get('resource_content')
-        # print(resource_content)
-        api = SolidAPI(headers=None)
-        folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
-        if folder_data:  # if folder_data is a container
-            for f in folder_data.folders:
-                f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-                f.del_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-            for f in folder_data.files:
-                f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-                f.del_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-            context['folder_data'] = folder_data
+        print(resource_content)
+        if resource_content:
+            api = SolidAPI(headers=None)
+            folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
+            if folder_data:  # if folder_data is a container
+                for f in folder_data.folders:
+                    f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
+                    f.del_url = reverse('pod_node:delete_resource') + f'?url={f.url}'
+                for f in folder_data.files:  # preview, download and delete liks
+                    f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
+                    f.preview_url = reverse('pod_node:preview_resource') + f'?url={f.url}'
+                    f.download_url = reverse('pod_node:download_resource') + f'?url={f.url}'
+                    f.del_url = reverse('pod_node:delete_resource') + f'?url={f.url}'
+                context['folder_data'] = folder_data
 
-        context['resource_content'] = resource_content
-
-    elif r.status_code == 500:
-        messages.error(request,
-                       json_data.get('error'))
-
+            context['resource_content'] = resource_content
+        else:
+            messages.error(request, f"Error: {r.status_code} {r.text}")
+    elif r.status_code == 401:
+        messages.warning(request,
+                         f"Error: {r.status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif r.status_code == 403:
+        messages.warning(request,
+                         f"Error: {r.status_code}  Insufficient rights to a resource to access {resource_url}")
+    # elif r.status_code == 500:
+    #     messages.error(request, f"Error: {r.status_code} {r.text}")
+    else:
+        messages.error(request, f"Error: {r.status_code} {r.text}")
     return render(request, 'pod_node/view_resource.html', context)
 
 
@@ -126,17 +150,42 @@ def logout(request):
     sessionId = request.session.get('node_sessionId')
     logout_url = 'http://localhost:3030/solid-pod-lg/logout'
     logout_url = logout_url + f'/?sessionId={sessionId}'
-    print(logout_url)
-    #try:
-    r = httpx.get(logout_url)
-    if r.status_code == 500:
-        json_data = r.json()
+    try:
+        r = httpx.get(logout_url)
+        if r.status_code == 500:
+            json_data = r.json()
+            messages.error(request,
+                           json_data.get('error'))
+        request.session['node_sessionId'] = None
+        request.session['node_webId'] = None
+        request.session['node_isLoggedIn'] = False
+    except:
         messages.error(request,
-                       json_data.get('error'))
-    request.session['node_sessionId'] = None
-    request.session['node_webId'] = None
-    request.session['node_isLoggedIn'] = False
-    # except:
-    #     messages.error(request,
-    #                    'No response from solid-pod-lg API')
+                       'No response from solid-pod-lg API')
     return redirect('pod_node:pod_node')
+
+
+def preview_resource(request):
+    resource_url = request.GET.get("url").strip()
+    messages.warning(request,
+                   'Not implemented yet')
+    parent_url = get_parent_url(resource_url)
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
+
+
+def download_resource(request):
+    print('preview_resource')
+    resource_url = request.GET.get("url").strip()
+    parent_url = get_parent_url(resource_url)
+    messages.warning(request,
+                   'Not implemented yet')
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
+
+
+def delete_resource(request):
+    print('delete_resource')
+    resource_url = request.GET.get("url").strip()
+    parent_url = get_parent_url(resource_url)
+    messages.warning(request,
+                   'Not implemented yet')
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
