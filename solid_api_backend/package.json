@@ -1,0 +1,37 @@
+{
+  "name": "solid_api_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "keywords": [
+    "solid",
+    "api",
+    "inrupt",
+    "node",
+    "express"
+  ],
+  "author": "Luc Galarneau",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.4"
+  },
+  "dependencies": {
+    "@inrupt/solid-client": "^1.30.2",
+    "@inrupt/solid-client-authn-browser": "^1.17.5",
+    "@inrupt/solid-client-authn-node": "^1.17.5",
+    "@inrupt/vocab-common-rdf": "^1.0.5",
+    "@inrupt/vocab-solid": "^1.0.4",
+    "body-parser": "^1.20.2",
+    "cookie-session": "^2.1.0",
+    "cors": "^2.8.5",
+    "express-fileupload": "^1.5.1",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}
