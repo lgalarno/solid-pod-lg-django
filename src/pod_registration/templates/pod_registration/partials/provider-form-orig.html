@@ -1,0 +1,45 @@
+{% if form_provider %}
+    {% if form_provider.errors %}
+        <div class="row justify-content-md-center">
+            <div class="col-md-8 alert alert-danger">
+                {{ form_provider.errors }}
+            </div>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="row justify-content-md-center">
+            <div class="form-group col-md-3 mb-0">
+                <div id="div_id_url" class="mb-3">
+                    <input type="url" name="url" maxlength="200" class="urlinput form-control" required="" id="id_url" value="{{ form.data.url }}">
+                    <label for="id_url" class="form-label requiredField">Provider URL<span class="asteriskField">*</span></label>
+                </div>
+            </div>
+            <div class="form-group col-md-1 mb-0">
+                <button
+                    hx-post="{% url 'pod_registration:pods_htmx-api:create-provider' %}"
+                    hx-target="#provider-form" class="btn btn-primary float-end">
+                    add
+                </button>
+            </div>
+        </div>
+    </form>
+
+{% endif %}
+
+{% if oidcps %}
+    <form method="POST" action="{% url 'connector:connect' %}" name="form_oidcp">
+        {% csrf_token %}
+        <label for="oidcp" class="form-label">Using a WebID provider</label>
+        <div class="input-group">
+            <select class="form-select" aria-label="Connect with an WebID provider" name="oidcp">
+                {% for o in oidcps %}
+                    <option value="{{ o.pk }}">{{ o.url }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Connect</button>
+        </div>
+    </form>
+{% endif %}
+
