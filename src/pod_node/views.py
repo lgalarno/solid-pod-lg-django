@@ -185,7 +185,6 @@ def view_resource(request):
 
 def preview_resource(request):
     print('preview_resource')
-    print(_MEDIA_ROOT)
     resource_url = request.GET.get("url").strip()
     fn = Path(resource_url).name
     payload = {
@@ -242,9 +241,11 @@ def preview_resource(request):
         _reset_session(request)
         messages.error(request, resp.text)
     else:
+        print('else')
         messages.error(request, resp.text)
     response = HttpResponse()
-    response["HX-Redirect"] = f'{reverse("pod_node:view_resource")}?url={resource_url}'
+    parent_url = get_parent_url(resource_url)
+    response["HX-Redirect"] = f'{reverse("pod_node:view_resource")}?url={parent_url}'
     return response
 
 

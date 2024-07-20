@@ -62,7 +62,10 @@ router.post("/fetch", async (req, res, next) => {
                     }
                 }
             } else {
-                obj.text = resp.statusText  // get statusText from solid=client
+                console.log(obj.status)
+                console.log(resp.statusText)
+                
+                obj.text = `Error ${obj.status}: ${resp.statusText}`  // get statusText from solid=client
             }
         } catch(err) {
             obj.status = 500
@@ -95,8 +98,9 @@ router.get("/download", async (req, res, next) => {
             obj.content = new Buffer(arrayBuffer)
         } catch (err) {
             console.log('error: ')
+            console.log('error: ' + `Error ${err.statusCode}: ${err.statusText}`)
             obj.status = err.statusCode
-            obj.content = `Error ${err.statusCode}: ${err.statusText}`
+            obj.text = `Error ${err.statusCode}: ${err.statusText}`
         }
     }
     res.status(obj.status)
