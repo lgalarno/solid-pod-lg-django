@@ -54,6 +54,7 @@ class Links:
 
 class Item:
     def __init__(self):
+        self.root = None
         self.url = None
         self.name = None
         # get size of the file

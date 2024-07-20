@@ -91,14 +91,11 @@ router.get("/download", async (req, res, next) => {
             const filename = path.parse(obj.resourceURL).base;
             const parent = path.dirname(obj.resourceURL)
 
-            console.log('contentType: ' + getContentType(file))
             res.contentType(getContentType(file));
             res.set("Content-Disposition", "attachment;filename=" + filename)
             obj.status = 200
             obj.content = new Buffer(arrayBuffer)
         } catch (err) {
-            console.log('error: ')
-            console.log('error: ' + `Error ${err.statusCode}: ${err.statusText}`)
             obj.status = err.statusCode
             obj.text = `Error ${err.statusCode}: ${err.statusText}`
         }

@@ -15,9 +15,11 @@
                 <td><a href="{{ f.view_url }}" title="{{ f.url }}">{{ f.name }}</a></td>
                 <td></td>
                 <td>
-                    <a href="{{ f.del_url }}" title="delete" class="btn" onclick="return confirm('Are you sure?')">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </a>
+                    {% if not f.root %}
+                        <a href="{{ f.del_url }}" title="delete" class="btn" onclick="return confirm('Are you sure?')">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </a>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
@@ -38,11 +40,11 @@
                 </td>
                 <td>
                     <a href="{{ f.del_url }}" title="delete" class="btn" onclick="return confirm('Are you sure?')">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </a>
-                    <a href="{{ f.download_url }}" title="download" class="btn" >
-                        <i class="bi bi-box-arrow-down"></i>
-                    </a>
+                            <i class="fa-regular fa-trash-can"></i>
+                        </a>
+                        <a href="{{ f.download_url }}" title="download" class="btn" >
+                            <i class="bi bi-box-arrow-down"></i>
+                        </a>
 
                 </td>
             </tr>

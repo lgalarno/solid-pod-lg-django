@@ -49,6 +49,7 @@ def parse_folder_response(text, url, pod):
 
     folders, files = [], []
     item = Item()  # create parent item
+    item.root = True
     item.name = '../'  # get_item_name(this) Parent url
     # if url == pod:
     #     item.url = this
@@ -70,6 +71,7 @@ def parse_folder_response(text, url, pod):
     for obj in g.objects(this, LDP.contains):
         item_url = str(obj)
         item = Item()
+        item.root = False
         # item.parent = get_parent_url(item_url)
         # item.links = None
         item.name = get_item_name(item_url)
