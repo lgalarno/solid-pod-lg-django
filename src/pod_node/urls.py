@@ -17,4 +17,7 @@ urlpatterns = [
     path('preview-resource/', views.preview_resource, name="preview_resource"),
     path('download-resource/', views.download_resource, name="download_resource"),
     path('delete-resource/', views.delete_resource, name="delete_resource"),
+    path('create-resource/', views.create_resource, name="create_resource"),
+    path('create-container/', views.create_container, name="create_container"),
+    path('upload-resource/', views.upload_resource, name="upload_resource"),
 ]

@@ -7,6 +7,7 @@ from django.utils.http import urlencode
 from connector.solid_api import SolidAPI
 from connector.utillities.minis import get_parent_url
 
+import json
 import httpx
 import requests
 # Create your views here.
@@ -66,7 +67,7 @@ def login(request):
         context['issuer_url'] = issuer_url
         if issuer_url[-1] != '/':
             issuer_url = issuer_url + '/'
-    login_url = f'{_NODE_SERVER_URL}login/?issuer_url={issuer_url}'
+    login_url = f'{_NODE_SERVER_URL}auth/login/?issuer_url={issuer_url}'
     print(login_url)
     return HttpResponseRedirect(login_url)
 
@@ -87,8 +88,6 @@ def login_callback(request):
 
 def view_resource(request):
     print('view_resource')
-    sessionId = request.session.get('node_sessionId')
-    # webId = request.session.get('node_webId')
 
     if request.method == 'GET':
         resource_url = request.GET.get("url").strip()
@@ -100,21 +99,24 @@ def view_resource(request):
         'title': 'view-resource',
         'resource_url': resource_url
     }
-
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': resource_url
+    }
     # resource_url = 'https://solid.insightdatalg.ca/lgalarno/profile/'
-    fetch_url = f'{_NODE_SERVER_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
-    print(fetch_url)
+    # fetch_url = f'{_NODE_SERVER_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
+    fetch_url = f'{_NODE_SERVER_URL}resources/fetch/'
     try:
-        r = httpx.get(fetch_url)
+        resp = requests.post(fetch_url, json=payload)
     except:
         messages.error(request,
                          'No response from solid-pod-lg API')
         return render(request, 'pod_node/pod_node.html', context)
-
-    if r.status_code == 200:
-        json_data = r.json()
-        resource_content = json_data.get('resource_content')
-        print(resource_content)
+    json_data = resp.json()
+    status_code = json_data.get('status')
+    mess = json_data.get('text')
+    if status_code == 200:
+        resource_content = json_data.get('content')
         if resource_content:
             api = SolidAPI(headers=None)
             folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
@@ -131,31 +133,35 @@ def view_resource(request):
 
             context['resource_content'] = resource_content
         else:
-            messages.error(request, f"Error: {r.status_code} {r.text}")
-    elif r.status_code == 401:
+            messages.error(request, f"Error: {status_code} {mess}")
+    elif status_code == 401:
         messages.warning(request,
-                         f"Error: {r.status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
-    elif r.status_code == 403:
+                         f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif status_code == 403:
         messages.warning(request,
-                         f"Error: {r.status_code}  Insufficient rights to a resource to access {resource_url}")
+                         f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
     # elif r.status_code == 500:
     #     messages.error(request, f"Error: {r.status_code} {r.text}")
     else:
-        messages.error(request, f"Error: {r.status_code} {r.text}")
+        messages.error(request, f"Error: {status_code} {mess}")
     return render(request, 'pod_node/view_resource.html', context)
 
 
 def logout(request):
     print('logout')
-    sessionId = request.session.get('node_sessionId')
-    logout_url = 'http://localhost:3030/solid-pod-lg/logout'
-    logout_url = logout_url + f'/?sessionId={sessionId}'
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+    }
+    logout_url = f'{_NODE_SERVER_URL}auth/logout/'
     try:
-        r = httpx.get(logout_url)
-        if r.status_code == 500:
-            json_data = r.json()
-            messages.error(request,
-                           json_data.get('error'))
+        resp = requests.post(logout_url, json=payload)
+        json_data = resp.json()
+        status_code = json_data.get('status')
+        mess = json_data.get('text')
+        if status_code == 500:
+            messages.error(request, f'Error {status_code}: {mess}')
+        else:
+            messages.success(request, mess)
         request.session['node_sessionId'] = None
         request.session['node_webId'] = None
         request.session['node_isLoggedIn'] = False
@@ -189,3 +195,50 @@ def delete_resource(request):
     messages.warning(request,
                    'Not implemented yet')
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
+
+
+def create_resource(request):
+    print(request.POST)
+    source_url = request.POST.get("source_url").strip()
+    messages.warning(request,
+                   'Not implemented yet')
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))
+
+
+def create_container(request):
+    source_url = request.POST.get("source_url").strip()
+    messages.warning(request,
+                   'Not implemented yet')
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))
+
+
+def upload_resource(request):
+    source_url = request.POST.get("source_url").strip()
+    context = {
+        'title': 'view-resource',
+        'resource_url': source_url
+    }
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': source_url
+    }
+    file = request.FILES["file"]
+    files = [
+        ('file', (file.name, file.read(), file.content_type)),
+    ]
+    upload_url = f'{_NODE_SERVER_URL}resources/upload/'
+    try:
+        resp = requests.post(upload_url, data=payload, files=files)
+    except:
+        messages.error(request,
+                         'No response from solid-pod-lg API')
+        return render(request, 'pod_node/pod_node.html', context)
+    json_data = resp.json()
+    status_code = json_data.get('status')
+    mess = json_data.get('text')
+    if status_code == 200 or status_code == 201:
+        messages.success(request, mess)
+    else:
+        messages.error(request, f'Error {status_code}: {mess}')
+
+    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))

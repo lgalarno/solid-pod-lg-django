@@ -8,41 +8,54 @@
 
     <br>
     <div class="row justify-content-md-center ">
-        <div class="col-md-10 bg-white p-3 mb-2 rounded shadow-sm">
-            <h3>Solid pod : {{ pod }} </h3>
-            <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
-            <div id="ttl-content" {% if folder_data %}class="collapse" {% else%} class="collapse.show"{% endif%}>
-                <pre class="bg-light">{{ resource_content }}</pre>
-            </div>
-            <hr>
+        <div class="col-md-10 ">
+             <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                <h3>Solid pod : {{ pod }} </h3>
+                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
+                <div id="ttl-content" {% if folder_data %}class="collapse" {% else%} class="collapse.show"{% endif%}>
+                    <pre class="bg-light">{{ resource_content }}</pre>
+                </div>
+                <hr>
+             </div>
         </div>
     </div>
 
     <div class="row justify-content-md-center">
-        <div class="col-md-6 bg-white p-3 mb-2  me-2  rounded shadow-sm">
-            {% include 'pod_node/partials/resource_content.html' %}
+        <div class="col-md-5">
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                {% include 'pod_node/partials/resource_content.html' %}
+            </div>
         </div>
 
-        <div class="col-md-4 bg-white p-3 mb-2 rounded shadow-sm">
-            {% if folder_data %}
-                <h4>Create resources</h4>
-                <div >
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-container-dialog" title="New container">
-                         <i class="bi bi-folder-plus" style="font-size: 2rem;"></i>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-resource-dialog" title="New file">
-                        <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#upload-form-dialog" title="Upload">
-                        <i class="bi bi-file-arrow-up" style="font-size: 2rem;"></i>
-                    </button>
-                </div>
-                <div id="modal-form" class="modal fade">
-                    <div id="form-dialog" class="modal-dialog" hx-target="this"></div>
-                </div>
-            {% endif %}
+        <div class="col-md-5">
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                {% if folder_data %}
+                    <h4>Create resources</h4>
+                    <div >
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-container-dialog" title="New container">
+                             <i class="bi bi-folder-plus" style="font-size: 2rem;"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-resource-dialog" title="New file">
+                            <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#upload-form-dialog" title="Upload">
+                            <i class="bi bi-file-arrow-up" style="font-size: 2rem;"></i>
+                        </button>
+                    </div>
+                    <div class="modal fade" id="new-container-dialog" tabindex="-1" aria-labelledby="New container form dialog" aria-hidden="true">
+                        {% include 'pod_node/partials/new-container-form.html' %}
+                    </div>
+                    <div class="modal fade" id="new-resource-dialog" tabindex="-1" aria-labelledby="New resource form dialog" aria-hidden="true">
+                        {% include 'pod_node/partials/new-resource-form.html' %}
+                    </div>
+                    <div class="modal fade" id="upload-form-dialog" tabindex="-1" aria-labelledby="Upload form dialog" aria-hidden="true">
+                        {% include 'pod_node/partials/upload-form.html' %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+            </div>
         </div>
-
     </div>
 {% endblock %}
 

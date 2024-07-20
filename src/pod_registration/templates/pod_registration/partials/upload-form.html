@@ -1,5 +1,5 @@
-<div class="modal-dialog">
-    <div class="modal-content">
+<div class="modal-dialog modal-lg">
+    <div class="modal-content ">
         <form method="POST" action="{% url 'pod_registration:upload_resource' state_session_pk %}" enctype="multipart/form-data" id="formfile" name="formfile" >
             {% csrf_token %}
             <input type="hidden" name="lookup_url" value="{{ lookup_url }}"/>
@@ -18,4 +18,3 @@
         </form>
     </div>
 </div>
-

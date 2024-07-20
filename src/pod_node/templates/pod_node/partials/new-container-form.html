@@ -1,8 +1,8 @@
 <div class="modal-dialog">
     <div class="modal-content">
-        <form method="POST" action="{% url 'pod_registration:create_container' state_session_pk %}" id="formcontainer" name="formcontainer" >
+        <form method="POST" action="{% url 'pod_node:create_container' %}" id="formcontainer" name="formcontainer">
             {% csrf_token %}
-            <input type="hidden" name="lookup_url" value="{{ lookup_url }}"/>
+            <input type="hidden" name="source_url" value="{{ resource_url }}"/>
             <div class="modal-header">
                 <h4>Create a container</h4>
             </div>

@@ -1,14 +1,15 @@
-<div class="modal-dialog">
+<div class="modal-dialog modal-lg">
     <div class="modal-content">
-        <form method="POST" action="{% url 'pod_registration:upload_resource' state_session_pk %}" enctype="multipart/form-data" id="formfile" name="formfile" >
+        <form method="POST" action="{% url 'pod_node:upload_resource' %}" enctype="multipart/form-data" id="formfile" name="formfile" >
             {% csrf_token %}
-            <input type="hidden" name="lookup_url" value="{{ lookup_url }}"/>
+            <input type="hidden" name="source_url" value="{{ resource_url }}"/>
             <div class="modal-header">
                 <h4>Upload a file</h4>
             </div>
             <div class="modal-body">
+                <p class="alert alert-danger">Warning, a resource with the same name will be overwritten</p>
                 <div class="input-group mb-3">
-                    <input type="file" class="form-control" name="to_pod" id="upload_input" placeholder="Upload file" aria-label="Upload file" aria-describedby="button-addon2" required>
+                    <input type="file" class="form-control" name="file" id="upload_input" placeholder="Upload file" aria-label="Upload file" aria-describedby="button-addon2" required>
                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Upload</button>
                 </div>
             </div>
@@ -18,4 +19,3 @@
         </form>
     </div>
 </div>
-

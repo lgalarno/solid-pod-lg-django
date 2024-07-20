@@ -104,15 +104,12 @@ router.get("/download", async (req, res, next) => {
 
 router.post("/upload", async (req, res, next) => {
     console.log('upload')
-    const json_data = JSON.parse(req.body.json_data)
-    const file = req.files.file
-    const new_resourceURL = json_data.resourceURL + file.name
 
-    // req.query.sessionId = json_data.sessionId
-    // req.query.resource = json_data.current_resource
-
-    let obj = await initFetch(json_data)  // obj contains session, resourceURL, response status, response content
+    let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
     if (obj.valid === true) {
+        const file = req.files.file
+        const new_resourceURL = obj.resourceURL + file.name
+
         const savedFile = await overwriteFile(
             new_resourceURL,                   // URL for the file.
             file.data,                        // Buffer containing file data
