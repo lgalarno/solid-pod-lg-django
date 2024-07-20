@@ -1,18 +1,31 @@
 from django.conf import settings
+from django.core.files import File
 from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.shortcuts import render, HttpResponse, redirect, HttpResponseRedirect, reverse
 from django.utils.http import urlencode
 
+from pathlib import Path
+
+import httpx
+import requests
+
 from connector.solid_api import SolidAPI
 from connector.utillities.minis import get_parent_url
 
-import json
-import httpx
-import requests
+
 # Create your views here.
 
 _NODE_SERVER_URL = settings.NODE_SERVER_URL
+_MEDIA_ROOT = Path(settings.MEDIA_ROOT)
+_MEDIA = Path(settings.MEDIA_URL)
+
+def _reset_session(request):
+    request.session['node_sessionId'] = None
+    request.session['node_webId'] = None
+    request.session['node_isLoggedIn'] = False
+    return True
 
 
 def test(request):
@@ -86,6 +99,28 @@ def login_callback(request):
     return render(request, 'pod_node/pod_node.html', context)
 
 
+def logout(request):
+    print('logout')
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+    }
+    logout_url = f'{_NODE_SERVER_URL}auth/logout/'
+    try:
+        resp = requests.post(logout_url, json=payload)
+        json_data = resp.json()
+        status_code = json_data.get('status')
+        mess = json_data.get('text')
+        if status_code == 500:
+            messages.error(request, f'Error {status_code}: {mess}')
+        else:
+            messages.success(request, mess)
+        _reset_session(request)
+    except:
+        messages.error(request,
+                       'No response from solid-pod-lg API')
+    return redirect('pod_node:pod_node')
+
+
 def view_resource(request):
     print('view_resource')
 
@@ -140,60 +175,107 @@ def view_resource(request):
     elif status_code == 403:
         messages.warning(request,
                          f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
-    # elif r.status_code == 500:
-    #     messages.error(request, f"Error: {r.status_code} {r.text}")
+    elif status_code == 500 and mess == 'Error 500: No session found.':
+        _reset_session(request)
+        messages.error(request, mess)
     else:
-        messages.error(request, f"Error: {status_code} {mess}")
+        messages.error(request, mess)
     return render(request, 'pod_node/view_resource.html', context)
 
 
-def logout(request):
-    print('logout')
+def preview_resource(request):
+    print('preview_resource')
+    print(_MEDIA_ROOT)
+    resource_url = request.GET.get("url").strip()
+    fn = Path(resource_url).name
     payload = {
         'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': resource_url
     }
-    logout_url = f'{_NODE_SERVER_URL}auth/logout/'
-    try:
-        resp = requests.post(logout_url, json=payload)
-        json_data = resp.json()
-        status_code = json_data.get('status')
-        mess = json_data.get('text')
-        if status_code == 500:
-            messages.error(request, f'Error {status_code}: {mess}')
+    download_url = f'{_NODE_SERVER_URL}resources/download/?' + urlencode(payload)
+    resp = requests.get(download_url)
+    if resp.status_code == 200:
+        header = resp.headers
+        content_type = header.get('content-type')
+        file = resp.content
+        if 'text' in content_type:
+            context = {
+                'file': file.decode('utf-8'),
+                'filename': fn,
+                'content_type': content_type
+            }
+            return render(request, 'pod_node/partials/text_file.html', context)
+        elif 'image' in content_type:
+            long_fn = _MEDIA_ROOT / fn
+            if long_fn.exists():
+                long_fn.unlink()
+            with open(long_fn, 'wb') as f:
+                f.write(file)
+            # fs = FileSystemStorage()
+            # fs.save(fn, File(resp.content))
+            # file_data = open(_MEDIA_ROOT / fn, "rb").read()  # set file as variable
+            # fs.delete(fn)  # delete the file from folder
+            context = {
+                'file': _MEDIA / fn,
+                'filename': fn,
+                'content_type': content_type
+            }
+            return render(request, 'pod_node/partials/image_file.html', context)
         else:
-            messages.success(request, mess)
-        request.session['node_sessionId'] = None
-        request.session['node_webId'] = None
-        request.session['node_isLoggedIn'] = False
-    except:
-        messages.error(request,
-                       'No response from solid-pod-lg API')
-    return redirect('pod_node:pod_node')
-
-
-def preview_resource(request):
-    resource_url = request.GET.get("url").strip()
-    messages.warning(request,
-                   'Not implemented yet')
-    parent_url = get_parent_url(resource_url)
-    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
+            messages.warning(request, f'Unsupported file type: {content_type}')
+    elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
+        _reset_session(request)
+        messages.error(request, resp.text)
+    else:
+        messages.error(request, resp.text)
+    response = HttpResponse()
+    response["HX-Redirect"] = f'{reverse("pod_node:view_resource")}?url={resource_url}'
+    return response
 
 
 def download_resource(request):
     print('preview_resource')
     resource_url = request.GET.get("url").strip()
-    parent_url = get_parent_url(resource_url)
-    messages.warning(request,
-                   'Not implemented yet')
-    return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': resource_url
+    }
+    download_url = f'{_NODE_SERVER_URL}resources/download/?' + urlencode(payload)
+    return HttpResponseRedirect(download_url)
 
 
 def delete_resource(request):
     print('delete_resource')
     resource_url = request.GET.get("url").strip()
     parent_url = get_parent_url(resource_url)
-    messages.warning(request,
-                   'Not implemented yet')
+
+    context = {
+        'title': 'view-resource',
+        'resource_url': resource_url
+    }
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': resource_url
+    }
+    delete_url = f'{_NODE_SERVER_URL}resources/delete/'
+
+    try:
+        resp = requests.post(delete_url, json=payload)
+    except:
+        messages.error(request,
+                         'No response from solid-pod-lg API')
+        return render(request, 'pod_node/pod_node.html', context)
+    json_data = resp.json()
+    status_code = json_data.get('status')
+    mess = json_data.get('text')
+    if status_code == 200 or status_code == 205:
+        messages.success(request, mess)
+    elif status_code == 500 and mess == 'Error 500: No session found.':
+        _reset_session(request)
+        messages.error(request, mess)
+    else:
+        messages.error(request, mess)
+
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
 
 
@@ -238,7 +320,10 @@ def upload_resource(request):
     mess = json_data.get('text')
     if status_code == 200 or status_code == 201:
         messages.success(request, mess)
+    elif status_code == 500 and mess == 'Error 500: No session found.':
+        _reset_session(request)
+        messages.error(request, mess)
     else:
-        messages.error(request, f'Error {status_code}: {mess}')
+        messages.error(request, mess)
 
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))

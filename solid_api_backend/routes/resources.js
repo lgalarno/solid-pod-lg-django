@@ -58,7 +58,7 @@ router.post("/fetch", async (req, res, next) => {
                 } else {
                     if (resp.status === 200) {  // send only ttl file here, otherwise, error 400
                         obj.status = 400
-                        obj.text = `Invalid file type ${obj.content_type}: not a ttl file.`
+                        obj.text = `Error 400: Invalid file type ${obj.content_type}: not a ttl file.`
                     }
                 }
             } else {
@@ -66,7 +66,7 @@ router.post("/fetch", async (req, res, next) => {
             }
         } catch(err) {
             obj.status = 500
-            obj.text = `An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
+            obj.text = `Error 500: An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
         }
     }
     // res.status(obj.status)
@@ -77,6 +77,7 @@ router.post("/fetch", async (req, res, next) => {
 router.get("/download", async (req, res, next) => {
     console.log('download')
     let obj = await initFetch(req.query)  // obj contains session, resourceURL, response status, response content
+    
     if (obj.valid === true) {
         try {
             const file = await getFile(
@@ -93,12 +94,18 @@ router.get("/download", async (req, res, next) => {
             obj.status = 200
             obj.content = new Buffer(arrayBuffer)
         } catch (err) {
+            console.log('error: ')
             obj.status = err.statusCode
             obj.content = `Error ${err.statusCode}: ${err.statusText}`
         }
     }
     res.status(obj.status)
-    return res.send(obj.content);
+    if (obj.status === 200) {
+        return res.send(obj.content);
+    } else {
+        return res.send(obj.text);
+    }  
+
     });
 
 
@@ -128,7 +135,7 @@ router.post("/upload", async (req, res, next) => {
             obj.text = `${new_resourceURL} created`
         } catch (err) {
             obj.status = 500
-            obj.text = `${err.statusText}`
+            obj.text = `Error 500: ${err.statusText}`
         }
     }
     delete obj.session
@@ -155,7 +162,6 @@ router.post("/delete", async (req, res, next) => {
         }
     }
     delete obj.session
-    console.log(JSON.stringify(obj))
     return res.send(JSON.stringify(obj));
 });
 
@@ -244,13 +250,13 @@ router.get("/test", async (req, res, next) => {
         if (typeof obj.session === "undefined") {
             obj.valid = false
             obj.status = 500
-            obj.text = `No session found.`  // 'No session found. Please, log in to your pod provider again.'
+            obj.text = `Error 500: No session found.`  // 'No session found. Please, log in to your pod provider again.'
         }
         console.log('resource: ' + r.resourceURL)
         if (typeof r.resourceURL === "undefined") {
             obj.valid = false
             obj.status = 500
-            obj.text = "Pass the (encoded) URL of the Resource using `?resource=&lt;resource URL&gt;`."  //'Please pass the (encoded) URL of the Resource you want to fetch using `?resource=&lt;resource URL&gt;`.'
+            obj.text = "Error 500: Pass the (encoded) URL of the Resource using `?resource=&lt;resource URL&gt;`."  //'Please pass the (encoded) URL of the Resource you want to fetch using `?resource=&lt;resource URL&gt;`.'
         }
         obj.resourceURL = r.resourceURL
         return obj
