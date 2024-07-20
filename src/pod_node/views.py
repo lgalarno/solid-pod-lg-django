@@ -198,6 +198,13 @@ def preview_resource(request):
         header = resp.headers
         content_type = header.get('content-type')
         file = resp.content
+        if 'text/turtle' in content_type:
+            context = {
+                'file': file.decode('utf-8'),
+                'filename': fn,
+                'content_type': content_type
+            }
+            return render(request, 'pod_node/partials/ttl_file.html', context)
         if 'text' in content_type:
             context = {
                 'file': file.decode('utf-8'),
@@ -211,16 +218,24 @@ def preview_resource(request):
                 long_fn.unlink()
             with open(long_fn, 'wb') as f:
                 f.write(file)
-            # fs = FileSystemStorage()
-            # fs.save(fn, File(resp.content))
-            # file_data = open(_MEDIA_ROOT / fn, "rb").read()  # set file as variable
-            # fs.delete(fn)  # delete the file from folder
             context = {
                 'file': _MEDIA / fn,
                 'filename': fn,
                 'content_type': content_type
             }
             return render(request, 'pod_node/partials/image_file.html', context)
+        elif 'audio' in content_type:
+            long_fn = _MEDIA_ROOT / fn
+            if long_fn.exists():
+                long_fn.unlink()
+            with open(long_fn, 'wb') as f:
+                f.write(file)
+            context = {
+                'file': _MEDIA / fn,
+                'filename': fn,
+                'content_type': content_type
+            }
+            return render(request, 'pod_node/partials/audio_file.html', context)
         else:
             messages.warning(request, f'Unsupported file type: {content_type}')
     elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
