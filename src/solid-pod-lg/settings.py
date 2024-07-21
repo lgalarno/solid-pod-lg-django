@@ -137,8 +137,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-
 ######################################################################
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -177,4 +175,4 @@ OID_CALLBACK_URI = config["OID_CALLBACK_URI"]
 CLIENT_NAME = config["CLIENT_NAME"]
 CLIENT_CONTACT = config["CLIENT_CONTACT"]
 CLIENT_URL = config["CLIENT_URL"]
-NODE_SERVER_URL = config.get("NODE_SERVER_URL")
+NODE_API_URL = config.get("NODE_API_URL")

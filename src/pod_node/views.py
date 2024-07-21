@@ -17,14 +17,15 @@ from connector.utillities.minis import get_parent_url
 
 # Create your views here.
 
-_NODE_SERVER_URL = settings.NODE_SERVER_URL
+_NODE_API_URL = settings.NODE_API_URL
 _MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 _MEDIA = Path(settings.MEDIA_URL)
 
-def _reset_session(request):
-    request.session['node_sessionId'] = None
-    request.session['node_webId'] = None
-    request.session['node_isLoggedIn'] = False
+
+def _reset_session(request, session_info=None):
+    request.session['node_sessionId'] = session_info.get('sessionId')
+    request.session['node_webId'] = session_info.get('webId')
+    request.session['node_isLoggedIn'] = session_info.get('isLoggedIn')
     return True
 
 
@@ -64,6 +65,19 @@ def sessions(request):
 
 def pod_node(request):
     #TODO check with node server if logged in?
+    sessionId = request.session.get('node_sessionId')
+    if sessionId:
+        payload = {'sessionId': sessionId}
+        node_api_url = f'{_NODE_API_URL}auth/session'
+        try:
+            resp = requests.post(node_api_url, json=payload)
+            json_data = resp.json()
+        except:
+            messages.error(request,
+                           'No response from solid-pod-lg API')
+    else:
+        json_data = {}
+    _reset_session(request, json_data)
     context = {
         'title': 'pod-node',
     }
@@ -80,19 +94,18 @@ def login(request):
         context['issuer_url'] = issuer_url
         if issuer_url[-1] != '/':
             issuer_url = issuer_url + '/'
-    login_url = f'{_NODE_SERVER_URL}auth/login/?issuer_url={issuer_url}'
-    print(login_url)
+    login_url = f'{_NODE_API_URL}auth/login/?issuer_url={issuer_url}'
     return HttpResponseRedirect(login_url)
 
 
 def login_callback(request):
     print(request.GET)
-    sessionId = request.GET.get('sessionId')
-    isLoggedIn = request.GET.get('isLoggedIn') == 'true'
-    webId = request.GET.get('webId')
-    request.session['node_sessionId'] = sessionId
-    request.session['node_webId'] = webId
-    request.session['node_isLoggedIn'] = isLoggedIn
+    session_info = {
+        'sessionId': request.GET.get('sessionId'),
+        'isLoggedIn': request.GET.get('isLoggedIn') == 'true',
+        'webId': request.GET.get('webId')
+    }
+    _reset_session(request, session_info)
     context = {
         'title': 'login-callback'
     }
@@ -104,7 +117,7 @@ def logout(request):
     payload = {
         'sessionId': request.session.get('node_sessionId'),
     }
-    logout_url = f'{_NODE_SERVER_URL}auth/logout/'
+    logout_url = f'{_NODE_API_URL}auth/logout/'
     try:
         resp = requests.post(logout_url, json=payload)
         json_data = resp.json()
@@ -114,7 +127,7 @@ def logout(request):
             messages.error(request, f'Error {status_code}: {mess}')
         else:
             messages.success(request, mess)
-        _reset_session(request)
+        _reset_session(request, session_info={})
     except:
         messages.error(request,
                        'No response from solid-pod-lg API')
@@ -139,8 +152,8 @@ def view_resource(request):
         'resourceURL': resource_url
     }
     # resource_url = 'https://solid.insightdatalg.ca/lgalarno/profile/'
-    # fetch_url = f'{_NODE_SERVER_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
-    fetch_url = f'{_NODE_SERVER_URL}resources/fetch/'
+    # fetch_url = f'{_NODE_API_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
+    fetch_url = f'{_NODE_API_URL}resources/fetch/'
     try:
         resp = requests.post(fetch_url, json=payload)
     except:
@@ -176,7 +189,7 @@ def view_resource(request):
         messages.warning(request,
                          f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
     elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request)
+        _reset_session(request, session_info={})
         messages.error(request, mess)
     else:
         messages.error(request, mess)
@@ -191,7 +204,7 @@ def preview_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    download_url = f'{_NODE_SERVER_URL}resources/download/?' + urlencode(payload)
+    download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
     resp = requests.get(download_url)
     if resp.status_code == 200:
         header = resp.headers
@@ -238,7 +251,7 @@ def preview_resource(request):
         else:
             messages.warning(request, f'Unsupported file type: {content_type}')
     elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
-        _reset_session(request)
+        _reset_session(request, session_info={})
         messages.error(request, resp.text)
     else:
         print('else')
@@ -256,7 +269,7 @@ def download_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    download_url = f'{_NODE_SERVER_URL}resources/download/?' + urlencode(payload)
+    download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
     return HttpResponseRedirect(download_url)
 
 
@@ -273,7 +286,7 @@ def delete_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    delete_url = f'{_NODE_SERVER_URL}resources/delete/'
+    delete_url = f'{_NODE_API_URL}resources/delete/'
 
     try:
         resp = requests.post(delete_url, json=payload)
@@ -287,7 +300,7 @@ def delete_resource(request):
     if status_code == 200 or status_code == 205:
         messages.success(request, mess)
     elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request)
+        _reset_session(request, session_info={})
         messages.error(request, mess)
     else:
         messages.error(request, mess)
@@ -324,7 +337,7 @@ def upload_resource(request):
     files = [
         ('file', (file.name, file.read(), file.content_type)),
     ]
-    upload_url = f'{_NODE_SERVER_URL}resources/upload/'
+    upload_url = f'{_NODE_API_URL}resources/upload/'
     try:
         resp = requests.post(upload_url, data=payload, files=files)
     except:
@@ -337,7 +350,7 @@ def upload_resource(request):
     if status_code == 200 or status_code == 201:
         messages.success(request, mess)
     elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request)
+        _reset_session(request, session_info={})
         messages.error(request, mess)
     else:
         messages.error(request, mess)

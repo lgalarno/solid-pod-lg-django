@@ -88,4 +88,23 @@ router.post("/logout", async (req, res, next) => {
     return res.send(json_data);
 });
 
+
+router.post("/session", async (req, res, next) => {
+  console.log('session')
+  let obj = {} 
+  console.log('sessionId: ' + req.body.sessionId)
+  let session = await getSessionFromStorage(req.body.sessionId);
+  if (typeof session === "undefined") {
+    obj.sessionId = false
+    obj.webId = false
+    obj.isLoggedIn = false
+  } else {
+    obj.sessionId = session.sessionId
+    obj.webId = session.webId
+    obj.isLoggedIn = session.isLoggedIn
+  } 
+  return res.send(obj);
+});
+
+
 module.exports = router;

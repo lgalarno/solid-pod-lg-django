@@ -41,7 +41,6 @@ const fetch = require("node-fetch");
 
 router.post("/fetch", async (req, res, next) => {
     console.log('fetch')
-    console.log('req.body: ' + req.body)
     let obj = await initFetch(req.body)  // obj contains session, resourceURL, status, content, text, ContentType
     if (obj.valid === true) {
         try {
@@ -243,24 +242,24 @@ router.get("/test", async (req, res, next) => {
     return res.send(obj.content);
 });
 
-    async function initFetch(r) {
-        let obj = {}
-        obj.valid = true
-        console.log('sessionId: ' + r.sessionId)
-        obj.session = await getSessionFromStorage(r.sessionId);
-        if (typeof obj.session === "undefined") {
-            obj.valid = false
-            obj.status = 500
-            obj.text = `Error 500: No session found.`  // 'No session found. Please, log in to your pod provider again.'
-        }
-        console.log('resource: ' + r.resourceURL)
-        if (typeof r.resourceURL === "undefined") {
-            obj.valid = false
-            obj.status = 500
-            obj.text = "Error 500: Pass the (encoded) URL of the Resource using `?resource=&lt;resource URL&gt;`."  //'Please pass the (encoded) URL of the Resource you want to fetch using `?resource=&lt;resource URL&gt;`.'
-        }
-        obj.resourceURL = r.resourceURL
-        return obj
+async function initFetch(r) {
+    let obj = {}
+    obj.valid = true
+    console.log('sessionId: ' + r.sessionId)
+    obj.session = await getSessionFromStorage(r.sessionId);
+    if (typeof obj.session === "undefined") {
+        obj.valid = false
+        obj.status = 500
+        obj.text = `Error 500: No session found.`  // 'No session found. Please, log in to your pod provider again.'
     }
+    console.log('resource: ' + r.resourceURL)
+    if (typeof r.resourceURL === "undefined") {
+        obj.valid = false
+        obj.status = 500
+        obj.text = "Error 500: Pass the (encoded) URL of the Resource using `?resource=&lt;resource URL&gt;`."  //'Please pass the (encoded) URL of the Resource you want to fetch using `?resource=&lt;resource URL&gt;`.'
+    }
+    obj.resourceURL = r.resourceURL
+    return obj
+}
 
 module.exports = router;

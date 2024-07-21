@@ -67,7 +67,6 @@ def parse_folder_response(text, url, pod):
     cat = folders if is_container(this) else files
     cat.append(item)
 
-    # TODO solidcommunity root folder
     for obj in g.objects(this, LDP.contains):
         item_url = str(obj)
         item = Item()
