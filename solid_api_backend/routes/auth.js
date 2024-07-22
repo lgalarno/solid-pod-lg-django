@@ -26,22 +26,35 @@ router.get("/login", async (req, res, next) => {
       // given URL, but the specific method of redirection depend on your app's particular setup.
       // For example, if you are writing a command line app, this might simply display a prompt for
       // the user to visit the given URL in their browser.
-        res.redirect(url);
+      res.redirect(url);
     }
     // 2. Start the login process; redirect handler will handle sending the user to their
     //    Solid Identity Provider.
-    await session.login({
-      // After login, the Solid Identity Provider will send the user back to the following
-      // URL, with the data necessary to complete the authentication process
-      // appended as query parameters:
-      redirectUrl: `${HOST}:${PORT}/auth/callback`,
-      oidcIssuer: oidcIssuer,
-      // Pick an application name that will be shown when asked
-      // to approve the application's access to the requested data.
-      clientName: CLIENTNAME,
-
-      handleRedirect: redirectToSolidIdentityProvider,
-    });
+    
+    // console.log(await (await session.fetch(resourceURL)).text());
+    try {
+      await session.login({
+        // After login, the Solid Identity Provider will send the user back to the following
+        // URL, with the data necessary to complete the authentication process
+        // appended as query parameters:
+        redirectUrl: `${HOST}:${PORT}/auth/callback`,
+        oidcIssuer: oidcIssuer,
+        // Pick an application name that will be shown when asked
+        // to approve the application's access to the requested data.
+        clientName: CLIENTNAME,
+        handleRedirect: redirectToSolidIdentityProvider,
+      });
+    } catch(err) {
+        
+        console.log('error: ' + err)
+        console.log('error: ' + err.code )
+        if (err.code === 'ENOTFOUND') {
+          var mess ={error: `${oidcIssuer} not found. Please, double check the url.`}
+        } else {
+          var mess = err
+        }
+        return res.status(500).send(mess)
+    } 
   });
 
 
@@ -56,6 +69,7 @@ router.get("/callback", async (req, res) => {
     // 4. With your session back from storage, you are now able to
     //    complete the login process using the data appended to it as query
     //    parameters in req.url by the Solid Identity Provider:
+    console.log(typeof session)
     await session.handleIncomingRedirect(`${HOST}:${PORT}/auth${req.url}`)
 
     const session_info = querystring.stringify(session.info)
