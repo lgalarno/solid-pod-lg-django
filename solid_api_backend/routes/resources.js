@@ -65,6 +65,7 @@ router.post("/fetch", async (req, res, next) => {
             }
         } catch(err) {
             console.log('catch: ' + err)
+            obj.error = true
             obj.status = 500
             obj.text = `Error 500: An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
         }
@@ -93,6 +94,7 @@ router.get("/download", async (req, res, next) => {
             obj.status = 200
             obj.content = new Buffer(arrayBuffer)
         } catch (err) {
+            obj.error = true
             obj.status = err.statusCode
             obj.text = `Error ${err.statusCode}: ${err.statusText}`
         }
@@ -116,14 +118,6 @@ router.post("/upload", async (req, res, next) => {
         const file = req.files.file
         const new_resourceURL = obj.resourceURL + file.name
 
-        const savedFile = await overwriteFile(
-            new_resourceURL,                   // URL for the file.
-            file.data,                        // Buffer containing file data
-            { contentType: file.mimetype, fetch: obj.session.fetch } // mimetype if known, fetch from the authenticated session
-        );
-        obj.status = 201
-        obj.text = `${new_resourceURL} created`
-
         try {
             const savedFile = await overwriteFile(
                 new_resourceURL,                   // URL for the file.
@@ -134,6 +128,7 @@ router.post("/upload", async (req, res, next) => {
             obj.text = `${new_resourceURL} created`
         } catch (err) {
             obj.status = 500
+            obj.error = true
             obj.text = `Error 500: ${err.statusText}`
         }
     }
@@ -157,6 +152,7 @@ router.post("/delete", async (req, res, next) => {
             obj.text = `${obj.resourceURL} deleted`
         } catch (err) {
             obj.status = err.statusCode
+            obj.error = true
             obj.text = `Error ${err.statusCode}: ${err.statusText}`
         }
     }
@@ -192,6 +188,7 @@ router.get("/getpodurl", async (req, res, next) => {
             obj.content = mypods
         } catch (err) {
             obj.status = err.statusCode
+            obj.error = true
             obj.content = `Error ${err.statusCode}: ${err.statusText}`
         }
     }
@@ -233,6 +230,7 @@ router.get("/test", async (req, res, next) => {
             obj.content = await resp.text()
         } catch(e) {
             obj.status = 500
+            obj.error = true
             obj.content = `An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
         } 
     }

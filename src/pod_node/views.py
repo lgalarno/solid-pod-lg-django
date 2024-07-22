@@ -250,12 +250,12 @@ def preview_resource(request):
             return render(request, 'pod_node/partials/audio_file.html', context)
         else:
             messages.warning(request, f'Unsupported file type: {content_type}')
+
     elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
         _reset_session(request, session_info={})
-        messages.error(request, resp.text)
+        messages.error(request, resp.json().get('text'))
     else:
-        print('else')
-        messages.error(request, resp.text)
+        messages.error(request, resp.json().get('text'))
     response = HttpResponse()
     parent_url = get_parent_url(resource_url)
     response["HX-Redirect"] = f'{reverse("pod_node:view_resource")}?url={parent_url}'
@@ -354,5 +354,4 @@ def upload_resource(request):
         messages.error(request, mess)
     else:
         messages.error(request, mess)
-
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))

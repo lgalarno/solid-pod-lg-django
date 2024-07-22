@@ -8,9 +8,11 @@ const {
 
 const express = require('express');
 const router = express.Router();
-const PORT = process.env.PORT || 3030;
-const PORT_DJANGO = process.env.PORT_DJANGO || 8000;
 const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 3030;
+const HOST_DJANGO = process.env.HOST_DJANGO || 'localhost';
+const PORT_DJANGO = process.env.PORT_DJANGO || 8000;
+
 
 
 router.get("/login", async (req, res, next) => {
@@ -76,7 +78,7 @@ router.get("/callback", async (req, res) => {
     console.log('sessionId: ' + session.info.sessionId)
     console.log('webID: ' + session.info.webId)
     console.log('isLoggedIn: ' + session.info.isLoggedIn)
-    const SolidPodLGurl = `${HOST}:${PORT_DJANGO}/pod-node/login-callback/`
+    const SolidPodLGurl = `${HOST_DJANGO}:${PORT_DJANGO}/pod-node/login-callback/`
     const login_callback_url = SolidPodLGurl + '?' + session_info
 
     res.redirect(login_callback_url);
