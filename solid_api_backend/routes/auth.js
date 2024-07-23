@@ -10,7 +10,7 @@ const express = require('express');
 const router = express.Router();
 const HOST = process.env.HOST || 'localhost:';
 const PORT = process.env.PORT || 3030;
-const PORT_HTTP = process.env.PORT_HTTP || 3030;
+const HTTP_PORT = process.env.HTTP_PORT || 3030;
 const PORT_DJANGO = process.env.PORT_DJANGO || 8000;
 
 
@@ -39,7 +39,7 @@ router.get("/login", async (req, res, next) => {
         // After login, the Solid Identity Provider will send the user back to the following
         // URL, with the data necessary to complete the authentication process
         // appended as query parameters:
-        redirectUrl: `${HOST}${PORT_HTTP}/api/auth/callback`,
+        redirectUrl: `${HOST}${HTTP_PORT}/api/auth/callback`,
         oidcIssuer: oidcIssuer,
         // Pick an application name that will be shown when asked
         // to approve the application's access to the requested data.
@@ -72,7 +72,7 @@ router.get("/callback", async (req, res) => {
     //    complete the login process using the data appended to it as query
     //    parameters in req.url by the Solid Identity Provider:
     console.log(typeof session)
-    await session.handleIncomingRedirect(`${HOST}${PORT_HTTP}/api/auth${req.url}`)
+    await session.handleIncomingRedirect(`${HOST}${HTTP_PORT}/api/auth${req.url}`)
 
     const session_info = querystring.stringify(session.info)
     console.log('sessionId: ' + session.info.sessionId)
