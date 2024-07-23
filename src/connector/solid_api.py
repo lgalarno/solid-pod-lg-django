@@ -4,6 +4,7 @@ from enum import Enum
 from httpx import Response, HTTPStatusError
 from typing import Optional, Union, Dict, Iterable, AsyncIterable, List
 
+
 from connector.utillities.minis import get_root_url, LINK, get_parent_url, get_item_name
 from connector.utillities.folder import parse_folder_response
 
@@ -82,12 +83,12 @@ RequestContent = Union[str, bytes, Iterable[bytes], AsyncIterable[bytes]]
 
 
 class SolidAPI:
-    def __init__(self, headers=None, pod=None):
+    def __init__(self, headers=None):
         self.client = httpx.Client()
         self.headers = headers
-        self.pod = headers  # ?
+        self.pod = headers
 
-    def fetch(self, method, url, options: Dict = None) -> Response:
+    def fetch(self, method, url, options: Dict = {}) -> Response:
         if not options:
             options = {}
         if self.headers:
@@ -96,7 +97,6 @@ class SolidAPI:
             else:
                 options['headers'] = self.headers
         r = self.client.request(method, url, **options)
-        # r= httpx.request(method, url, **options)
         # catch status errors in the client
         # r.raise_for_status()
         return r

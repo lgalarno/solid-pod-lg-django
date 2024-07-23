@@ -26,7 +26,6 @@
         {% for f in folder_data.files %}
             <tr>
                 <td>
-{#                    <a href="{{ f.preview_url }}" title="{{ f.url }}">{{ f.name }}</a>#}
                     <a href="{{ f.preview_url }}"
                        title="{{ f.url }}"
                        hx-get="{{ f.preview_url }}"
@@ -41,11 +40,10 @@
                 <td>
                     <a href="{{ f.del_url }}" title="delete" class="btn" onclick="return confirm('Are you sure?')">
                             <i class="fa-regular fa-trash-can"></i>
-                        </a>
-                        <a href="{{ f.download_url }}" title="download" class="btn" >
-                            <i class="bi bi-box-arrow-down"></i>
-                        </a>
-
+                    </a>
+                    <a href="{{ f.download_url }}" title="download" class="btn" >
+                        <i class="bi bi-box-arrow-down"></i>
+                    </a>
                 </td>
             </tr>
         {% endfor %}

@@ -7,62 +7,62 @@
 
     <br>
     <div class="row justify-content-md-center ">
-        <div class="col-md-10 bg-white p-3 mb-2 rounded shadow-sm">
-            <a href="{% url 'pod_registration:dashboard' %}" style="float: right;"> Back to select another resource/pod</a>
-            <h3>Solid pod : {{ pod }} </h3>
-            <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
-            <div id="ttl-content" {% if folder_data %}class="collapse"{% else%}class="collapse.show"{% endif%}>
+        <div class="col-md-10 ">
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                <a href="{% url 'pod_registration:dashboard' %}" style="float: right;"> Back to select another resource/pod</a>
+                <h3>Solid pod : {{ pod }} </h3>
+                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
+                <div id="ttl-content" {% if folder_data %}class="collapse"{% else%}class="collapse.show"{% endif%}>
                 <pre class="bg-light">{{ resource_content }}</pre>
+                </div>
+                {#                <h4>ttl content &nbsp;<small><button class="toggle-ttl btn-sm">&#9660;</button></small></h4>#}
+                {#                <div class="hide-show-ttl" style="display: none">#}
+                {#                    <pre class="bg-light">{{ resource_content }}</pre>#}
+                {#                </div>#}
+                <hr>
             </div>
-{#                <h4>ttl content &nbsp;<small><button class="toggle-ttl btn-sm">&#9660;</button></small></h4>#}
-{#                <div class="hide-show-ttl" style="display: none">#}
-{#                    <pre class="bg-light">{{ resource_content }}</pre>#}
-{#                </div>#}
-            <hr>
         </div>
     </div>
 
-    <div class="row justify-content-md-center">
-        <div class="col-md-6 bg-white p-3 mb-2  me-2  rounded shadow-sm">
-            {% include 'pod_registration/partials/resource_content.html' %}
+   <div class="row justify-content-md-center">
+        <div class="col-md-5">
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                {% include 'pod_registration/partials/resource_content.html' %}
+            </div>
         </div>
+        <div class="col-md-5">
+            <div class="bg-white p-3 mb-2 rounded shadow-sm">
+                {% if folder_data %}
+                    <h4>Create resources</h4>
+                    <div >
+    {#                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-container-dialog" title="New container">#}
+    {#                         <i class="bi bi-folder-plus" style="font-size: 2rem;"></i>#}
+    {#                    </button>#}
+    {#                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-resource-dialog" title="New file">#}
+    {#                        <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>#}
+    {#                    </button>#}
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#upload-form-dialog" title="Upload">
+                            <i class="bi bi-file-arrow-up" style="font-size: 2rem;"></i>
+                        </button>
+                    </div>
+    {#                <div class="modal fade" id="new-container-dialog" tabindex="-1" aria-labelledby="New container form dialog" aria-hidden="true">#}
+    {#                    {% include 'pod_registration/partials/new-container-form.html' %}#}
+    {#                </div>#}
+    {#                <div class="modal fade" id="new-resource-dialog" tabindex="-1" aria-labelledby="New resource form dialog" aria-hidden="true">#}
+    {#                    {% include 'pod_registration/partials/new-resource-form.html' %}#}
+    {#                </div>#}
+                    <div class="modal fade" id="upload-form-dialog" tabindex="-1" aria-labelledby="Upload form dialog" aria-hidden="true">
+                        {% include 'pod_registration/partials/upload-form.html' %}
+                    </div>
+                {% endif %}
+            </div>
 
-        <div class="col-md-4 bg-white p-3 mb-2 rounded shadow-sm">
-            {% if folder_data %}
-                <h4>Create resources</h4>
-                <div >
-{#                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-container-dialog" title="New container">#}
-{#                         <i class="bi bi-folder-plus" style="font-size: 2rem;"></i>#}
-{#                    </button>#}
-{#                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-resource-dialog" title="New file">#}
-{#                        <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>#}
-{#                    </button>#}
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#upload-form-dialog" title="Upload">
-                        <i class="bi bi-file-arrow-up" style="font-size: 2rem;"></i>
-                    </button>
-                </div>
-                <div class="modal fade" id="new-container-dialog" tabindex="-1" aria-labelledby="New container form dialog" aria-hidden="true">
-                    {% include 'pod_registration/partials/new-container-form.html' %}
-                </div>
-                <div class="modal fade" id="new-resource-dialog" tabindex="-1" aria-labelledby="New resource form dialog" aria-hidden="true">
-                    {% include 'pod_registration/partials/new-resource-form.html' %}
-                </div>
-                <div class="modal fade" id="upload-form-dialog" tabindex="-1" aria-labelledby="Upload form dialog" aria-hidden="true">
-                    {% include 'pod_registration/partials/upload-form.html' %}
-                </div>
-{#                <br>#}
-{#                <form method="POST" action="{% url 'pod_registration:upload_resource' state_session_pk %}" enctype="multipart/form-data" id="formfile" name="formfile" >#}
-{#                    {% csrf_token %}#}
-{#                    <input type="hidden" name="lookup_url" value="{{ lookup_url }}"/>#}
-{#                    <label for="upload_input">Upload file</label>#}
-{#                    <div class="input-group mb-3">#}
-{#                        <input type="file" class="form-control" name="to_pod" id="upload_input" placeholder="Upload file" aria-label="Upload file" aria-describedby="button-addon2" required>#}
-{#                        <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Upload</button>#}
-{#                    </div>#}
-{#                </form>#}
-            {% endif %}
+            <div class="bg-white p-3 mb-2 rounded shadow-sm" style="height:600px;" >
+                <h4>Preview</h4>
+                <p>Click on the file you want to preview on the left panel</p>
+                <div id="preview-htmx" hx-target="this"></div>
+            </div>
         </div>
-
     </div>
 {% endblock %}
 {##}

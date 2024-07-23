@@ -1,0 +1,7 @@
+{% load static %}
+<hr>
+<p>{{ filename }} <small>({{ content_type }})</small></p>
+<hr>
+<audio controls>
+    <source src="{{ file }}" type="{{ content_type }}">
+</audio>

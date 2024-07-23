@@ -98,6 +98,7 @@ def login(request):
         if issuer_url[-1] != '/':
             issuer_url = issuer_url + '/'
     login_url = f'{_NODE_API_URL}auth/login/?issuer_url={issuer_url}'
+    print(login_url)
     return HttpResponseRedirect(login_url)
 
 
@@ -199,7 +200,6 @@ def view_resource(request):
 
 def preview_resource(request):
     resource_url = request.GET.get("url").strip()
-    fn = Path(resource_url).name
     payload = {
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
@@ -207,8 +207,9 @@ def preview_resource(request):
     download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
     resp = requests.get(download_url)
     if resp.status_code == 200:
-        header = resp.headers
-        content_type = header.get('content-type')
+        fn = Path(resource_url).name
+        resp_headers = resp.headers
+        content_type = resp_headers.get('content-type')
         file = resp.content
         if 'text/turtle' in content_type:
             context = {

@@ -1,5 +1,9 @@
+from django.utils.http import quote
 from enum import Enum
 from typing import List
+
+import urllib.parse
+
 import base64
 import os
 import re
@@ -53,7 +57,7 @@ def get_item_name(url) -> str:
     #     return ''
     temp = remove_slashes_at_end(url)
     i = temp.rindex('/')
-    return url[i + 1:]
+    return urllib.parse.unquote(url[i + 1:])
 
 
 def are_folders(urls: List) -> bool:

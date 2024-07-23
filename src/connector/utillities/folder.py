@@ -1,6 +1,7 @@
 from hurry.filesize import size
 from rdflib import Namespace, Graph, URIRef, RDF
 from connector.utillities.minis import get_item_name, get_parent_url
+import urllib.parse
 
 POSIX = Namespace('http://www.w3.org/ns/posix/stat#')
 LDP = Namespace("http://www.w3.org/ns/ldp#")

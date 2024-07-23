@@ -117,7 +117,8 @@ router.post("/upload", async (req, res, next) => {
     if (obj.error === false) {
         const file = req.files.file
         const new_resourceURL = obj.resourceURL + file.name
-
+        console.log('new_resourceURL: ' + new_resourceURL)
+        console.log('file.name: ' + file.name)
         try {
             const savedFile = await overwriteFile(
                 new_resourceURL,                   // URL for the file.
@@ -133,7 +134,6 @@ router.post("/upload", async (req, res, next) => {
         }
     }
     delete obj.session
-    console.log(JSON.stringify(obj))
     return res.send(obj);
 });
 

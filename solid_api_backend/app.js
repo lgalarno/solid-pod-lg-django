@@ -21,6 +21,7 @@ const adminRouter = require('./routes/admin')
 // The following snippet ensures that the server identifies each user's session
 // with a cookie using an express-specific mechanism
 app.use(fileUpload());
+// app.use(cors());
 app.use(cors());
 app.use(bodyParser.urlencoded({ 
   parameterLimit: 100000,
@@ -34,8 +35,8 @@ app.use(
         name: "session",
         // These keys are required by cookie-session to sign the cookies.
         keys: [
-        "Required, but value not relevant for this demo - key1",
-        "Required, but value not relevant for this demo - key2",
+        "059f727ac7ff5dcdc2fb071c39101e66a9eb1c08f79fa26fd1ad01f335909130",
+        "b5fd03dd91df1cfbd2f19c115d24d58bbda01a23fb01924bb78b2cc14f7ff1cb",
         ],
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: false
