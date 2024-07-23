@@ -8,9 +8,9 @@ const {
 
 const express = require('express');
 const router = express.Router();
-const HOST = process.env.HOST || 'localhost';
+const HOST = process.env.HOST || 'localhost:';
 const PORT = process.env.PORT || 3030;
-const HOST_DJANGO = process.env.HOST_DJANGO || 'localhost';
+// const HOST_DJANGO = process.env.HOST_DJANGO || 'localhost:';
 const PORT_DJANGO = process.env.PORT_DJANGO || 8000;
 
 
@@ -39,7 +39,7 @@ router.get("/login", async (req, res, next) => {
         // After login, the Solid Identity Provider will send the user back to the following
         // URL, with the data necessary to complete the authentication process
         // appended as query parameters:
-        redirectUrl: `${HOST}:${PORT}/auth/callback`,
+        redirectUrl: `${HOST}${PORT}/api/auth/callback`,
         oidcIssuer: oidcIssuer,
         // Pick an application name that will be shown when asked
         // to approve the application's access to the requested data.
@@ -72,13 +72,13 @@ router.get("/callback", async (req, res) => {
     //    complete the login process using the data appended to it as query
     //    parameters in req.url by the Solid Identity Provider:
     console.log(typeof session)
-    await session.handleIncomingRedirect(`${HOST}:${PORT}/auth${req.url}`)
+    await session.handleIncomingRedirect(`${HOST}${PORT}/api/auth${req.url}`)
 
     const session_info = querystring.stringify(session.info)
     console.log('sessionId: ' + session.info.sessionId)
     console.log('webID: ' + session.info.webId)
     console.log('isLoggedIn: ' + session.info.isLoggedIn)
-    const SolidPodLGurl = `${HOST_DJANGO}:${PORT_DJANGO}/pod-node/login-callback/`
+    const SolidPodLGurl = `${HOST}${PORT_DJANGO}/pod-node/login-callback/`
     const login_callback_url = SolidPodLGurl + '?' + session_info
 
     res.redirect(login_callback_url);

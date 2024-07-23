@@ -69,6 +69,7 @@ def pod_node(request):
     if sessionId:
         payload = {'sessionId': sessionId}
         node_api_url = f'{_NODE_API_URL}auth/session'
+        print(node_api_url)
         try:
             resp = requests.post(node_api_url, json=payload)
             json_data = resp.json()
