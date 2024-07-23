@@ -8,9 +8,9 @@ const {
 
 const express = require('express');
 const router = express.Router();
-const HOST = process.env.HOST || 'localhost:';
-const PORT_HTTP = process.env.PORT_HTTP || 3030;
-const PORT_DJANGO = process.env.PORT_DJANGO || 8000;
+const HOST = process.env.HOST
+const PORT_HTTP = process.env.PORT_HTTP
+const PORT_DJANGO = process.env.PORT_DJANGO
 
 
 

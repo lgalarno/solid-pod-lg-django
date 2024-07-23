@@ -8,8 +8,8 @@ const fileUpload = require('express-fileupload');
 
 // const session = require('express-session')
 
-const PORT_API = process.env.PORT_API || 3030;
-const HOST_API = process.env.HOST_API || 'localhost:';
+const PORT_API = process.env.PORT_API
+const HOST_API = process.env.HOST_API
 
 const app = express();
 
