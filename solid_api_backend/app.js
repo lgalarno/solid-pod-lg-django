@@ -8,9 +8,8 @@ const fileUpload = require('express-fileupload');
 
 // const session = require('express-session')
 
-const API_PORT = process.env.API_PORT || 3030;
-const HOST = process.env.HOST || 'localhost:';
-const API_HOST = process.env.API_HOST || 'localhost:';
+const PORT_API = process.env.PORT_API || 3030;
+const HOST_API = process.env.HOST_API || 'localhost:';
 
 const app = express();
 
@@ -48,10 +47,10 @@ app.use('/api/resources', resourcesRouter);
 app.use('/api/admin', adminRouter);
 // app.use('/solid-pod-lg', solidPodLghRouter);
 
-app.listen(API_PORT, () => {
+app.listen(PORT_API, () => {
     console.log(
-      `Solid API backend running on port [${API_PORT}].` + 
-      `[${API_HOST}${API_PORT}] `
+      `Solid API backend running on port [${PORT_API}].` + 
+      `[${HOST_API}${PORT_API}] `
     );
   });
 
