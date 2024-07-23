@@ -15,14 +15,11 @@ This is the repository for the Solid Pod LG
 
 1. Login to Solid pod providers
    - Supported:
-      - CommunitySolidServer (https://github.com/CommunitySolidServer/CommunitySolidServer)
-      - node-solid-server (https://github.com/nodeSolidServer/node-solid-server)
-   - Unsupported: Inrupt Solid Authentication 
-2. View ttl files, folders and other files
-3. Download files (not ttl)
-4. Upload Files
-5. Delete Files
-6. User dashboard where a user can manage their webIds and solid pods
+      - [CommunitySolidServer](https://github.com/CommunitySolidServer/CommunitySolidServer)
+      - [node-solid-server](https://github.com/nodeSolidServer/node-solid-server)
+   - Unsupported: [Inrupt PodSpaces](https://start.inrupt.com/) 
+2. Preview files, folders and other pod content.
+3. User dashboard where a user can manage their webIds and solid pods
 
 ### Installation Instructions ###
 

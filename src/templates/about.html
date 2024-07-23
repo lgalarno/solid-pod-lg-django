@@ -1,10 +1,63 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="row">
-        <div class="col text-center">
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-10 p-3 mb-2">
             <h2>About Solid Pod LG</h2>
-            <p> Content coming soon...</p>
+            <h3>Concept</h3>
+            <p>
+                This site started as a proof of concept and was (and still is for the most part) a preliminary attempt to
+                interact with Solid Pods using Python and Django. When the project started, only minimal documentation
+                and resources existed for interation between <a href="https://solidproject.org/">Solid pods</a> and 
+                <a href="https://www.python.org/">Python</a>. This site was created using 
+                <a href="https://www.djangoproject.com/">Django</a> as a web framework, and Python as the backend. 
+                Most of the code was written from scratch, and it is by no means intended to be a full feature app. 
+            </p>
+            <p>
+                Credits go to the project <a href="https://github.com/twonote/solid-file-python">solid-file-python</a>
+                which was modified to be used as the crud api and to 
+                <a href="https://github.com/Otto-AA/solid-flask)">Otto-AA/solid-flask</a> which was inspirational for 
+                the authentication system. Thanks to the original authors!
+            </p>
+            <h3>The core features offered by SOLID LG</h3>
+            <ul>
+                <li>
+                    Login to Solid pod providers.
+                </li>
+                <li>
+                    Preview files, folders and other pod content.
+                </li>                
+                 <li>
+                    Download, upload and delete files.
+                </li>               
+                <li>
+                    User dashboard where a user can manage their webIds and solid pods.
+                </li>                
+            </ul>
+            <p>Currently, the python api backend support only the following Solid servers</p>
+                <ul>
+                    <li>
+                        <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">CommunitySolidServer</a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/nodeSolidServer/node-solid-server">node-solid-server</a>
+                    </li>
+                </ul>
+            <p>
+                For other Solid Pod providers, the situation is unknown... 
+                <a href="https://start.inrupt.com/">Inrupt PodSpaces</a> is not supported and the situation with
+                other Solid Pod providers is unknown.
+            </p>
+
+            <h3>In development</h3>
+            <p>
+                A new backend api programmed in <a href="https://nodejs.org/">Node.js</a> and 
+                <a href="https://expressjs.com/">Express</a> is in development and can be tested by selecting 
+                "Try the node.js api" in the navigation bar. This uses libraries developed by Inrupt to interact with 
+                Solid pod providers. The authentication is compatible with Inrupt PodSpaces and the 
+                <a href="https://www.inrupt.com/products/enterprise-solid-server">Enterprise Solid Server</a>. 
+                Try it out!
+            </p>
             <br>
             <a href="javascript:history.back()"><< Back to previous page</a>
         </div>

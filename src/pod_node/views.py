@@ -1,7 +1,5 @@
 from django.conf import settings
-from django.core.files import File
 from django.contrib import messages
-from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.shortcuts import render, HttpResponse, redirect, HttpResponseRedirect, reverse
 from django.utils.http import urlencode
@@ -65,11 +63,15 @@ def sessions(request):
 
 def pod_node(request):
     #TODO check with node server if logged in?
-    sessionId = request.session.get('node_sessionId')
-    if sessionId:
-        payload = {'sessionId': sessionId}
+    json_data = {
+        "sessionId": request.session.get('node_sessionId'),
+        "webId": request.session.get('node_webId'),
+        "isLoggedIn": request.session.get('node_isLoggedIn'),
+    }
+
+    if json_data["sessionId"]:
+        payload = {'sessionId': json_data["sessionId"]}
         node_api_url = f'{_NODE_API_URL}auth/session'
-        print(node_api_url)
         try:
             resp = requests.post(node_api_url, json=payload)
             json_data = resp.json()
@@ -100,7 +102,6 @@ def login(request):
 
 
 def login_callback(request):
-    print(request.GET)
     session_info = {
         'sessionId': request.GET.get('sessionId'),
         'isLoggedIn': request.GET.get('isLoggedIn') == 'true',
@@ -114,7 +115,6 @@ def login_callback(request):
 
 
 def logout(request):
-    print('logout')
     payload = {
         'sessionId': request.session.get('node_sessionId'),
     }
@@ -198,7 +198,6 @@ def view_resource(request):
 
 
 def preview_resource(request):
-    print('preview_resource')
     resource_url = request.GET.get("url").strip()
     fn = Path(resource_url).name
     payload = {
@@ -264,7 +263,6 @@ def preview_resource(request):
 
 
 def download_resource(request):
-    print('preview_resource')
     resource_url = request.GET.get("url").strip()
     payload = {
         'sessionId': request.session.get('node_sessionId'),
@@ -275,7 +273,6 @@ def download_resource(request):
 
 
 def delete_resource(request):
-    print('delete_resource')
     resource_url = request.GET.get("url").strip()
     parent_url = get_parent_url(resource_url)
 
@@ -310,7 +307,6 @@ def delete_resource(request):
 
 
 def create_resource(request):
-    print(request.POST)
     source_url = request.POST.get("source_url").strip()
     messages.warning(request,
                    'Not implemented yet')
