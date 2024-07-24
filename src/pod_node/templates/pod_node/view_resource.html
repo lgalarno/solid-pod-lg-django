@@ -4,7 +4,7 @@
 
 {% block content %}
     {% include 'pod_node/partials/oidc_login_status.html' %}
-{#    {% include 'pod_node/partials/nodjs_menu.html' %}#}
+    {% include 'pod_node/partials/nodjs_menu.html' %}
 
     <br>
     <div class="row justify-content-md-center ">
@@ -22,13 +22,13 @@
     </div>
 
     <div class="row justify-content-md-center">
-        <div class="col-md-5">
+        <div class="col-lg-5">
             <div class="bg-white p-3 mb-2 rounded shadow-sm">
                 {% include 'pod_node/partials/resource_content.html' %}
             </div>
         </div>
 
-        <div class="col-md-5">
+        <div class="col-lg-5">
             <div class="bg-white p-3 mb-2 rounded shadow-sm">
                 {% if folder_data %}
                     <h4>Create resources</h4>

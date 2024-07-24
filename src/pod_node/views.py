@@ -34,13 +34,14 @@ def test(request):
         'title': 'test-nodeAPI',
         'webId': webId
     }
-    resource = 'https://solid.insightdatalg.ca/lgalarno/'
-    fetch_url = 'http://localhost:3030/solid-pod-lg/test'
-    fetch_url = fetch_url + f'/?sessionId={sessionId}&resource={resource}'
-    print(fetch_url)
+    payload = {'sessionId': sessionId}
+    node_api_url = f'{_NODE_API_URL}auth/test'
+    print(node_api_url)
     try:
-        r = httpx.get(fetch_url)
+        r = httpx.post(node_api_url, json=payload)
         json_data = r.json()
+        print(json_data.get('webId'))
+        print(r.status_code)
         if r.status_code == 200:
             resource_content = json_data.get('resource_content')
             context['resource_content'] = resource_content
@@ -55,14 +56,13 @@ def test(request):
 
 def sessions(request):
     url = 'http://localhost:3030/solid-pod-lg/sessions'
-    r = requests.get(url)
+    r = httpx.get(url)
     # r = httpx.get(url)
     print(r.status_code)
     return HttpResponse("Hello World")
 
 
 def pod_node(request):
-    #TODO check with node server if logged in?
     json_data = {
         "sessionId": request.session.get('node_sessionId'),
         "webId": request.session.get('node_webId'),
@@ -73,7 +73,7 @@ def pod_node(request):
         payload = {'sessionId': json_data["sessionId"]}
         node_api_url = f'{_NODE_API_URL}auth/session'
         try:
-            resp = requests.post(node_api_url, json=payload)
+            resp = httpx.post(node_api_url, json=payload)
             json_data = resp.json()
         except:
             messages.error(request,
@@ -121,7 +121,7 @@ def logout(request):
     }
     logout_url = f'{_NODE_API_URL}auth/logout/'
     try:
-        resp = requests.post(logout_url, json=payload)
+        resp = httpx.post(logout_url, json=payload)
         json_data = resp.json()
         status_code = json_data.get('status')
         mess = json_data.get('text')
@@ -138,7 +138,6 @@ def logout(request):
 
 def view_resource(request):
     print('view_resource')
-
     if request.method == 'GET':
         resource_url = request.GET.get("url").strip()
     elif request.method == 'POST':
@@ -157,11 +156,11 @@ def view_resource(request):
     # fetch_url = f'{_NODE_API_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
     fetch_url = f'{_NODE_API_URL}resources/fetch/'
     try:
-        resp = requests.post(fetch_url, json=payload)
+        resp = httpx.post(fetch_url, json=payload)
     except:
         messages.error(request,
                          'No response from solid-pod-lg API')
-        return render(request, 'pod_node/pod_node.html', context)
+        return redirect('pod_node:pod_node')
     json_data = resp.json()
     status_code = json_data.get('status')
     mess = json_data.get('text')
@@ -205,7 +204,15 @@ def preview_resource(request):
         'resourceURL': resource_url
     }
     download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
-    resp = requests.get(download_url)
+    try:
+        resp = httpx.get(download_url)
+    except:
+        messages.error(request,
+                       'No response from solid-pod-lg API')
+        response = HttpResponse()
+        response["HX-Redirect"] = reverse("pod_node:pod_node")
+        return response
+
     if resp.status_code == 200:
         fn = Path(resource_url).name
         resp_headers = resp.headers
@@ -251,7 +258,6 @@ def preview_resource(request):
             return render(request, 'pod_node/partials/audio_file.html', context)
         else:
             messages.warning(request, f'Unsupported file type: {content_type}')
-
     elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
         _reset_session(request, session_info={})
         messages.error(request, resp.json().get('text'))
@@ -288,7 +294,7 @@ def delete_resource(request):
     delete_url = f'{_NODE_API_URL}resources/delete/'
 
     try:
-        resp = requests.post(delete_url, json=payload)
+        resp = httpx.post(delete_url, json=payload)
     except:
         messages.error(request,
                          'No response from solid-pod-lg API')

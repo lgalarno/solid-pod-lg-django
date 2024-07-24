@@ -20,7 +20,7 @@ router.get("/login", async (req, res, next) => {
     const session = new Session({ keepAlive: false }); // Turn off periodic refresh of the Session in background
     req.session.sessionId = session.info.sessionId
     const CLIENTNAME = process.env.CLIENTNAME;
-    const oidcIssuer =  req.query.issuer_url || 'https://solid.insightdatalg.ca/'
+    const oidcIssuer =  req.query.issuer_url
     console.log('oidcIssuer: ' + oidcIssuer)
     async function redirectToSolidIdentityProvider(url) {
       // Since we use Express in this example, we can call `res.redirect` to send the user to the
@@ -107,7 +107,6 @@ router.post("/logout", async (req, res, next) => {
 router.post("/session", async (req, res, next) => {
   console.log('session')
   let obj = {} 
-  console.log('sessionId: ' + req.body.sessionId)
   let session = await getSessionFromStorage(req.body.sessionId);
   if (typeof session === "undefined") {
     obj.sessionId = false
@@ -117,6 +116,22 @@ router.post("/session", async (req, res, next) => {
     obj.sessionId = session.sessionId
     obj.webId = session.webId
     obj.isLoggedIn = session.isLoggedIn
+  } 
+  return res.send(obj);
+});
+
+
+router.post("/test", async (req, res, next) => {
+  console.log('session')
+  let obj = {} 
+  let session = await getSessionFromStorage(req.body.sessionId);
+  if (typeof session === "undefined") {
+    obj.sessionId = false
+    obj.webId = false
+    obj.isLoggedIn = false
+  } else {
+    console.log('session info: ' + JSON.stringify(session.info))
+    obj = session.info
   } 
   return res.send(obj);
 });
