@@ -13,6 +13,7 @@ const {
     createThing,
     deleteSolidDataset,
     getBoolean,
+    getContainedResourceUrlAll,
     getContentType,
     getFile,
     getInteger,
@@ -22,6 +23,7 @@ const {
     getThing,
     getThingAll,
     getStringNoLocale,
+    getUrl,
     isContainer,
     isRawData,
     overwriteFile,
@@ -160,18 +162,24 @@ router.post("/delete", async (req, res, next) => {
     return res.send(obj);
 });
 
-router.get("/getpodurl", async (req, res, next) => {
+router.post("/getpodurl", async (req, res, next) => {
     console.log('getpodurl')
-    let obj = await initFetch(req)  // obj contains session, resourceURL, response status, response content
+    let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
     if (obj.error === false) {
+        console.log('Trying')
+        let ds = await getSolidDataset(obj.session.info.webId)
+        let thing = ds && getThing(ds, obj.session.info.webId)
+        let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#storage')
+        if (storageUrl) return storageUrl;
         try {
             const mypods = await getPodUrlAll(obj.session.info.webId, { fetch: obj.session.fetch });
             console.log('typeof: ' + typeof mypods)
             if (mypods == '') {
                 console.log('Empty')
                   try {
-                    let ds = await getSolidDataset(url)
-                    let thing = ds && getThing(ds, url)
+                    console.log('Trying')
+                    let ds = await getSolidDataset(obj.session.info.webId)
+                    let thing = ds && getThing(ds, obj.session.info.webId)
                     let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#storage')
                     if (storageUrl) return storageUrl;
                   } catch (_ignored) { }
@@ -193,18 +201,77 @@ router.get("/getpodurl", async (req, res, next) => {
         }
     }
     res.status(obj.status)
+    delete obj.session
     return res.send(obj);
-    });
+});
+
+
+
+router.post("/folder", async (req, res, next) => {
+    console.log('folder')
+
+    let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
+
+    if (obj.error === false) {
+        try {
+            const resp = await obj.session.fetch(obj.resourceURL)
+            obj.status = resp.status
+            obj.ContentType = resp.headers.get("content-type")
+            console.log('content_type: ' + obj.ContentType)
+            
+            if (obj.ContentType.includes('text/turtle') ) {
+                obj.ttl = await resp.text()
+                obj.container = isContainer(obj.resourceURL)
+
+                const myDataset = await getSolidDataset(
+                    obj.resourceURL,
+                    { fetch: obj.session.fetch }  // fetch function from authenticated session
+                );
+
+                let items = getThingAll(myDataset);
+                obj.content = [] 
+                items.forEach((item) => {
+                    const i = getInteger(item, POSIX.size);
+                    obj.content.push(
+                            {
+                                url: item.url,
+                                container: isContainer(item.url),
+                                size: getInteger(item, POSIX.size)
+                            } 
+                        )
+                });
+                obj.status = 200
+            } else if (resp.status === 200) {
+                {  // send only ttl file here, otherwise, error 400
+                    obj.status = 400
+                    obj.text = `Error 400: Invalid file type ${obj.content_type}: not a ttl file.`
+                } 
+            } else {
+                obj.error = true
+                obj.text = `Error ${resp.status}: ${resp.statusText}`
+            }
+        } catch(err) {
+            console.log('catch: ' + err)
+            obj.error = true
+            obj.status = 500
+            obj.text = `Error 500: An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
+        }
+    }
+    res.status(obj.status)
+    delete obj.session
+    return res.send(obj);
+});
 
 
 router.get("/test", async (req, res, next) => {
     console.log('test')
 
-    let obj = await initFetch(req)  // obj contains session, resourceURL, response status, response content
+    let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
+
     if (obj.error === false) {
         const myDataset = await getSolidDataset(
         obj.resourceURL,
-        { fetch: fetch }  // fetch function from authenticated session
+        { fetch: obj.session.fetch }  // fetch function from authenticated session
         );
 
         let items = getThingAll(myDataset);
@@ -222,17 +289,17 @@ router.get("/test", async (req, res, next) => {
         // let g= myDataset.graphs
 
         // console.log(await (await session.fetch(resourceURL)).text());
-        try {
-            resp = await obj.session.fetch(obj.resourceURL)
-            const content_type  = resp.headers.get("content-type")
-            res.type(content_type)
-            obj.status = resp.status
-            obj.content = await resp.text()
-        } catch(e) {
-            obj.status = 500
-            obj.error = true
-            obj.content = `An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
-        } 
+        // try {
+        //     resp = await obj.session.fetch(obj.resourceURL)
+        //     const content_type  = resp.headers.get("content-type")
+        //     res.type(content_type)
+        //     obj.status = resp.status
+        //     obj.content = await resp.text()
+        // } catch(e) {
+        //     obj.status = 500
+        //     obj.error = true
+        //     obj.content = `An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
+        // } 
     }
 
     res.status(obj.status)
@@ -243,12 +310,20 @@ async function initFetch(r) {
     let obj = {}
     obj.error = false
     console.log('sessionId: ' + r.sessionId)
-    obj.session = await getSessionFromStorage(r.sessionId);
-    if (typeof obj.session === "undefined") {
-        obj.error = true
+    try {
+        obj.session = await getSessionFromStorage(r.sessionId);
+        if (typeof obj.session === "undefined") {
+            obj.error = true
+            obj.status = 500
+            obj.text = `Error 500: No session found.`  // 'No session found. Please, log in to your pod provider again.'
+        }
+    } catch (err) {
+        console.log('err: ' + err)
         obj.status = 500
-        obj.text = `Error 500: No session found.`  // 'No session found. Please, log in to your pod provider again.'
+        obj.text = `Error 500: ${err}.`  // 'No session found. Please, log in to your pod provider again.'
     }
+    
+
     console.log('resource: ' + r.resourceURL)
     if (typeof r.resourceURL === "undefined") {
         obj.error = true

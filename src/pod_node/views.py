@@ -9,6 +9,7 @@ from pathlib import Path
 import httpx
 import requests
 
+from .backend import get_folder_content
 from connector.solid_api import SolidAPI
 from connector.utillities.minis import get_parent_url
 
@@ -34,23 +35,54 @@ def test(request):
         'title': 'test-nodeAPI',
         'webId': webId
     }
-    payload = {'sessionId': sessionId}
-    node_api_url = f'{_NODE_API_URL}auth/test'
+    resource_url = 'https://solid.insightdatalg.ca/lgalarno/'
+    payload = {
+        'sessionId': sessionId,
+        'resourceURL': resource_url
+    }
+    #
+    node_api_url = f'{_NODE_API_URL}resources/getpodurl/'
     print(node_api_url)
-    try:
-        r = httpx.post(node_api_url, json=payload)
-        json_data = r.json()
-        print(json_data.get('webId'))
-        print(r.status_code)
-        if r.status_code == 200:
-            resource_content = json_data.get('resource_content')
-            context['resource_content'] = resource_content
-        elif r.status_code == 500:
-            messages.error(request,
-                           json_data.get('error'))
-    except:
+    r = httpx.post(node_api_url, json=payload)
+    json_data = r.json()
+    print(json_data)
+    folder_data = get_folder_content(data=json_data.get('folder_content'), url=resource_url)
+    if folder_data:  # if folder_data is a container
+        print('folders')
+        for f in folder_data.folders:
+            print(f.name)
+        print('files')
+        for f in folder_data.files:  # preview, download and delete liks
+            print(f.name)
+        context['folder_data'] = folder_data
+    if r.status_code == 200:
+        resource_content = json_data.get('resource_content')
+        context['resource_content'] = resource_content
+
+    elif r.status_code == 500:
         messages.error(request,
-                         'No response from solid-pod-lg API')
+                       json_data.get('error'))
+    # try:
+    #     r = httpx.post(node_api_url, json=payload)
+    #     json_data = r.json()
+    #     print(json_data)
+    #     print('folders')
+    #     for f in json_data.folders:
+    #         print(f.url)
+    #     for f in json_data.files:
+    #         print(f.url)
+    #         print(f.size)
+    #
+    #     if r.status_code == 200:
+    #         resource_content = json_data.get('resource_content')
+    #         context['resource_content'] = resource_content
+    #
+    #     elif r.status_code == 500:
+    #         messages.error(request,
+    #                        json_data.get('error'))
+    # except:
+    #     messages.error(request,
+    #                      'No response from solid-pod-lg API')
     return render(request, 'pod_node/pod_node.html', context)
 
 
@@ -152,6 +184,54 @@ def view_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
+    fetch_url = f'{_NODE_API_URL}resources/folder/'
+    try:
+        resp = httpx.post(fetch_url, json=payload)
+    except:
+        messages.error(request,
+                         'No response from solid-pod-lg API')
+        return redirect('pod_node:pod_node')
+    json_data = resp.json()
+    status_code = json_data.get('status')
+    mess = json_data.get('text')
+    if status_code == 200:
+        ttl = json_data.get('ttl')
+        folder_content = json_data.get('content')
+        if folder_content:
+            folder_data = get_folder_content(data=folder_content, url=resource_url)
+            context['folder_data'] = folder_data
+        context['resource_content'] = ttl
+
+    elif status_code == 401:
+        messages.warning(request,
+                         f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif status_code == 403:
+        messages.warning(request,
+                         f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
+    elif status_code == 500 and mess == 'Error 500: No session found.':
+        _reset_session(request, session_info={})
+        messages.error(request, mess)
+    else:
+        messages.error(request, mess)
+    return render(request, 'pod_node/view_resource.html', context)
+
+
+def view_resource_old(request):
+    print('view_resource')
+    if request.method == 'GET':
+        resource_url = request.GET.get("url").strip()
+    elif request.method == 'POST':
+        resource_url = request.POST.get('resource_url').strip()
+    else:
+        raise Http404
+    context = {
+        'title': 'view-resource',
+        'resource_url': resource_url
+    }
+    payload = {
+        'sessionId': request.session.get('node_sessionId'),
+        'resourceURL': resource_url
+    }
     # resource_url = 'https://solid.insightdatalg.ca/lgalarno/profile/'
     # fetch_url = f'{_NODE_API_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
     fetch_url = f'{_NODE_API_URL}resources/fetch/'
@@ -169,6 +249,7 @@ def view_resource(request):
         if resource_content:
             api = SolidAPI(headers=None)
             folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
+            # folder_data = get_folder_content(data=resource_content, url=resource_url)
             if folder_data:  # if folder_data is a container
                 for f in folder_data.folders:
                     f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
