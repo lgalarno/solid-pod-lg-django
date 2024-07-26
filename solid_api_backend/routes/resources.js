@@ -119,8 +119,6 @@ router.post("/upload", async (req, res, next) => {
     if (obj.error === false) {
         const file = req.files.file
         const new_resourceURL = obj.resourceURL + file.name
-        console.log('new_resourceURL: ' + new_resourceURL)
-        console.log('file.name: ' + file.name)
         try {
             const savedFile = await overwriteFile(
                 new_resourceURL,                   // URL for the file.
@@ -209,16 +207,12 @@ router.post("/getpodurl", async (req, res, next) => {
 
 router.post("/folder", async (req, res, next) => {
     console.log('folder')
-
     let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
-
     if (obj.error === false) {
         try {
-            const resp = await obj.session.fetch(obj.resourceURL)
+            const resp = await obj.session.fetch(obj.resourceURL)  // get ttl file  
             obj.status = resp.status
             obj.ContentType = resp.headers.get("content-type")
-            console.log('content_type: ' + obj.ContentType)
-            
             if (obj.ContentType.includes('text/turtle') ) {
                 obj.ttl = await resp.text()
                 obj.container = isContainer(obj.resourceURL)

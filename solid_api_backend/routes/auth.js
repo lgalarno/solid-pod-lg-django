@@ -113,9 +113,9 @@ router.post("/session", async (req, res, next) => {
     obj.webId = false
     obj.isLoggedIn = false
   } else {
-    obj.sessionId = session.sessionId
-    obj.webId = session.webId
-    obj.isLoggedIn = session.isLoggedIn
+    obj.sessionId = session.info.sessionId
+    obj.webId = session.info.webId
+    obj.isLoggedIn = session.info.isLoggedIn
   } 
   return res.send(obj);
 });

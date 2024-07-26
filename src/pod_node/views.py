@@ -10,7 +10,6 @@ import httpx
 import requests
 
 from .backend import get_folder_content
-from connector.solid_api import SolidAPI
 from connector.utillities.minis import get_parent_url
 
 
@@ -100,12 +99,11 @@ def pod_node(request):
         "webId": request.session.get('node_webId'),
         "isLoggedIn": request.session.get('node_isLoggedIn'),
     }
-
-    if json_data["sessionId"]:
-        payload = {'sessionId': json_data["sessionId"]}
+    if json_data.get("isLoggedIn"):
+        payload = {'sessionId': json_data.get("sessionId")}
         node_api_url = f'{_NODE_API_URL}auth/session'
         try:
-            resp = httpx.post(node_api_url, json=payload)
+            resp = httpx.post(node_api_url, json=payload)  # refresh session info and check id node api is alive
             json_data = resp.json()
         except:
             messages.error(request,
@@ -216,68 +214,6 @@ def view_resource(request):
     return render(request, 'pod_node/view_resource.html', context)
 
 
-def view_resource_old(request):
-    print('view_resource')
-    if request.method == 'GET':
-        resource_url = request.GET.get("url").strip()
-    elif request.method == 'POST':
-        resource_url = request.POST.get('resource_url').strip()
-    else:
-        raise Http404
-    context = {
-        'title': 'view-resource',
-        'resource_url': resource_url
-    }
-    payload = {
-        'sessionId': request.session.get('node_sessionId'),
-        'resourceURL': resource_url
-    }
-    # resource_url = 'https://solid.insightdatalg.ca/lgalarno/profile/'
-    # fetch_url = f'{_NODE_API_URL}fetch/?sessionId={sessionId}&resource={resource_url}'
-    fetch_url = f'{_NODE_API_URL}resources/fetch/'
-    try:
-        resp = httpx.post(fetch_url, json=payload)
-    except:
-        messages.error(request,
-                         'No response from solid-pod-lg API')
-        return redirect('pod_node:pod_node')
-    json_data = resp.json()
-    status_code = json_data.get('status')
-    mess = json_data.get('text')
-    if status_code == 200:
-        resource_content = json_data.get('content')
-        if resource_content:
-            api = SolidAPI(headers=None)
-            folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=None)
-            # folder_data = get_folder_content(data=resource_content, url=resource_url)
-            if folder_data:  # if folder_data is a container
-                for f in folder_data.folders:
-                    f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-                    f.del_url = reverse('pod_node:delete_resource') + f'?url={f.url}'
-                for f in folder_data.files:  # preview, download and delete liks
-                    f.view_url = reverse('pod_node:view_resource') + f'?url={f.url}'
-                    f.preview_url = reverse('pod_node:preview_resource') + f'?url={f.url}'
-                    f.download_url = reverse('pod_node:download_resource') + f'?url={f.url}'
-                    f.del_url = reverse('pod_node:delete_resource') + f'?url={f.url}'
-                context['folder_data'] = folder_data
-
-            context['resource_content'] = resource_content
-        else:
-            messages.error(request, f"Error: {status_code} {mess}")
-    elif status_code == 401:
-        messages.warning(request,
-                         f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
-    elif status_code == 403:
-        messages.warning(request,
-                         f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
-    elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request, session_info={})
-        messages.error(request, mess)
-    else:
-        messages.error(request, mess)
-    return render(request, 'pod_node/view_resource.html', context)
-
-
 def preview_resource(request):
     resource_url = request.GET.get("url").strip()
     payload = {
@@ -307,12 +243,17 @@ def preview_resource(request):
             }
             return render(request, 'pod_node/partials/ttl_file.html', context)
         if 'text' in content_type:
-            context = {
-                'file': file.decode('utf-8'),
-                'filename': fn,
-                'content_type': content_type
-            }
-            return render(request, 'pod_node/partials/text_file.html', context)
+            try:
+                file = file.decode('utf-8')
+                context = {
+                    'file': file,
+                    'filename': fn,
+                    'content_type': content_type
+                }
+                return render(request, 'pod_node/partials/text_file.html', context)
+            except:
+                messages.warning(request, f'Unsupported file type: {content_type}')
+
         elif 'image' in content_type:
             long_fn = _MEDIA_ROOT / fn
             if long_fn.exists():
