@@ -45,14 +45,14 @@ router.get("/login", async (req, res, next) => {
         clientName: CLIENTNAME,
         handleRedirect: redirectToSolidIdentityProvider,
       });
-    } catch(err) {
+    } catch(error) {
         
-        console.log('error: ' + err)
-        console.log('error: ' + err.code )
-        if (err.code === 'ENOTFOUND') {
+        console.log('error: ' + error)
+        console.log('error: ' + error.code )
+        if (error.code === 'ENOTFOUND') {
           var mess ={error: `${oidcIssuer} not found. Please, double check the url.`}
         } else {
-          var mess = err
+          var mess = error
         }
         return res.status(500).send(mess)
     } 

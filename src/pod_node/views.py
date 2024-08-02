@@ -182,24 +182,56 @@ def view_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    fetch_url = f'{_NODE_API_URL}resources/folder/'
+    is_dataset_url = f'{_NODE_API_URL}resources/dataset/'
     try:
-        resp = httpx.post(fetch_url, json=payload)
+        resp = httpx.post(is_dataset_url, json=payload)
     except:
         messages.error(request,
                          'No response from solid-pod-lg API')
         return redirect('pod_node:pod_node')
-    json_data = resp.json()
-    status_code = json_data.get('status')
-    mess = json_data.get('text')
-    if status_code == 200:
-        ttl = json_data.get('ttl')
-        folder_content = json_data.get('content')
-        if folder_content:
-            folder_data = get_folder_content(data=folder_content, url=resource_url)
-            context['folder_data'] = folder_data
-        context['resource_content'] = ttl
 
+    json_data = resp.json()
+    mess = json_data.get('text')
+    status_code = json_data.get('status')
+    if status_code == 200:
+        if json_data.get('dataset'):
+            ttl = json_data.get('ttl')
+            context['resource_content'] = ttl
+            if json_data.get('container'):
+                folder_url = f'{_NODE_API_URL}resources/folder/'
+                try:
+                    payload = {
+                        'sessionId': request.session.get('node_sessionId'),
+                        'resourceURL': resource_url + 'aaa'
+                    }
+                    resp = httpx.post(folder_url, json=payload)
+                except:
+                    messages.error(request,
+                                     'No response from solid-pod-lg API')
+                    return redirect('pod_node:pod_node')
+                json_data = resp.json()
+                status_code = json_data.get('status')
+                mess = json_data.get('text')
+                if status_code == 200:
+                    folder_content = json_data.get('content')
+                    if folder_content:
+                        folder_data = get_folder_content(data=folder_content, url=resource_url)
+                        context['folder_data'] = folder_data
+                elif status_code == 401:
+                    messages.warning(request,
+                                     f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+                elif status_code == 403:
+                    messages.warning(request,
+                                     f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
+                elif status_code == 500 and mess == 'Error 500: No session found.':
+                    _reset_session(request, session_info={})
+                    messages.error(request, mess)
+                else:
+                    messages.error(request, mess)
+        else:
+            print('else')
+            messages.warning(request, 'Please, select a valid Solid dataset')
+            return redirect('pod_node:pod_node')
     elif status_code == 401:
         messages.warning(request,
                          f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
