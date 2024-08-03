@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import reverse
 
 from hurry.filesize import size
@@ -68,3 +69,27 @@ def get_folder_content(data=None, url=None):
     return ret
 
 
+def reset_session(request, session_info=None):
+    request.session['node_sessionId'] = session_info.get('sessionId')
+    request.session['node_webId'] = session_info.get('webId')
+    request.session['node_isLoggedIn'] = session_info.get('isLoggedIn')
+    return True
+
+
+def error_check(request, json_data):
+    status_code = json_data.get('status')
+    resource_url = json_data.get('resourceUrl')
+    mess = json_data.get('text')
+    error = True
+    if status_code >= 200 and status_code < 300:
+        error = False
+    elif status_code == 401:
+        messages.error(request, f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
+    elif status_code == 403:
+        messages.error(request, f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
+    elif status_code == 500 and mess == 'Error 500: No session found.':
+        reset_session(request, session_info={})
+        messages.error(request, mess)
+    else:
+        messages.error(request, mess)
+    return error

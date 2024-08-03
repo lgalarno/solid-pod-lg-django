@@ -186,10 +186,10 @@ router.post("/folder", async (req, res, next) => {
             });
             obj.status = 200
         } catch(error) {
-            console.log('catch: ' + error.message)
             obj.error = true
-            obj.status = 500
-            obj.text = `Error 500: An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
+            obj.status = error.statusCode
+            obj.text = `Error ${error.statusCode}: ${error.statusText}`
+            // obj.text = `Error 500: An error occurred getting - ${obj.resourceURL} -. Please, double check the url.`
         }
     }
     res.status(obj.status)

@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 import requests
 
-from .backend import get_folder_content
+from .backend import get_folder_content, reset_session, error_check
 from connector.utillities.minis import get_parent_url
 
 
@@ -18,13 +18,6 @@ from connector.utillities.minis import get_parent_url
 _NODE_API_URL = settings.NODE_API_URL
 _MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 _MEDIA = Path(settings.MEDIA_URL)
-
-
-def _reset_session(request, session_info=None):
-    request.session['node_sessionId'] = session_info.get('sessionId')
-    request.session['node_webId'] = session_info.get('webId')
-    request.session['node_isLoggedIn'] = session_info.get('isLoggedIn')
-    return True
 
 
 def test(request):
@@ -110,7 +103,7 @@ def pod_node(request):
                            'No response from solid-pod-lg API')
     else:
         json_data = {}
-    _reset_session(request, json_data)
+    reset_session(request, json_data)
     context = {
         'title': 'pod-node',
     }
@@ -119,7 +112,7 @@ def pod_node(request):
 
 def login(request):
     print('login node.js')
-    issuer_url = 'https://login.inrupt.com/'
+    # issuer_url = 'https://login.inrupt.com/'
     issuer_url = 'https://solid.insightdatalg.ca/'
     context = {}
     if request.method == 'POST':
@@ -138,7 +131,7 @@ def login_callback(request):
         'isLoggedIn': request.GET.get('isLoggedIn') == 'true',
         'webId': request.GET.get('webId')
     }
-    _reset_session(request, session_info)
+    reset_session(request, session_info)
     context = {
         'title': 'login-callback'
     }
@@ -159,7 +152,7 @@ def logout(request):
             messages.error(request, f'Error {status_code}: {mess}')
         else:
             messages.success(request, mess)
-        _reset_session(request, session_info={})
+        reset_session(request, session_info={})
     except:
         messages.error(request,
                        'No response from solid-pod-lg API')
@@ -191,9 +184,8 @@ def view_resource(request):
         return redirect('pod_node:pod_node')
 
     json_data = resp.json()
-    mess = json_data.get('text')
-    status_code = json_data.get('status')
-    if status_code == 200:
+    error = error_check(request, json_data=json_data)
+    if not error:
         if json_data.get('dataset'):
             ttl = json_data.get('ttl')
             context['resource_content'] = ttl
@@ -202,7 +194,7 @@ def view_resource(request):
                 try:
                     payload = {
                         'sessionId': request.session.get('node_sessionId'),
-                        'resourceURL': resource_url + 'aaa'
+                        'resourceURL': resource_url
                     }
                     resp = httpx.post(folder_url, json=payload)
                 except:
@@ -210,39 +202,15 @@ def view_resource(request):
                                      'No response from solid-pod-lg API')
                     return redirect('pod_node:pod_node')
                 json_data = resp.json()
-                status_code = json_data.get('status')
-                mess = json_data.get('text')
-                if status_code == 200:
+                error = error_check(request, json_data=json_data)
+                if not error:
                     folder_content = json_data.get('content')
                     if folder_content:
                         folder_data = get_folder_content(data=folder_content, url=resource_url)
                         context['folder_data'] = folder_data
-                elif status_code == 401:
-                    messages.warning(request,
-                                     f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
-                elif status_code == 403:
-                    messages.warning(request,
-                                     f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
-                elif status_code == 500 and mess == 'Error 500: No session found.':
-                    _reset_session(request, session_info={})
-                    messages.error(request, mess)
-                else:
-                    messages.error(request, mess)
         else:
-            print('else')
             messages.warning(request, 'Please, select a valid Solid dataset')
             return redirect('pod_node:pod_node')
-    elif status_code == 401:
-        messages.warning(request,
-                         f"Error: {status_code} trying to access {resource_url} . Please, log in to your pod provider before looking up for a resource")
-    elif status_code == 403:
-        messages.warning(request,
-                         f"Error: {status_code}  Insufficient rights to a resource to access {resource_url}")
-    elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request, session_info={})
-        messages.error(request, mess)
-    else:
-        messages.error(request, mess)
     return render(request, 'pod_node/view_resource.html', context)
 
 
@@ -250,7 +218,7 @@ def preview_resource(request):
     resource_url = request.GET.get("url").strip()
     payload = {
         'sessionId': request.session.get('node_sessionId'),
-        'resourceURL': resource_url
+        'resourceURL': resource_url +'aaa'
     }
     download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
     try:
@@ -261,7 +229,6 @@ def preview_resource(request):
         response = HttpResponse()
         response["HX-Redirect"] = reverse("pod_node:pod_node")
         return response
-
     if resp.status_code == 200:
         fn = Path(resource_url).name
         resp_headers = resp.headers
@@ -312,11 +279,9 @@ def preview_resource(request):
             return render(request, 'pod_node/partials/audio_file.html', context)
         else:
             messages.warning(request, f'Unsupported file type: {content_type}')
-    elif resp.status_code == 500 and resp.text == 'Error 500: No session found.':
-        _reset_session(request, session_info={})
-        messages.error(request, resp.json().get('text'))
     else:
-        messages.error(request, resp.json().get('text'))
+        json_data = resp.json()
+        error = error_check(request, json_data=json_data)
     response = HttpResponse()
     parent_url = get_parent_url(resource_url)
     response["HX-Redirect"] = f'{reverse("pod_node:view_resource")}?url={parent_url}'
@@ -354,16 +319,10 @@ def delete_resource(request):
                          'No response from solid-pod-lg API')
         return render(request, 'pod_node/pod_node.html', context)
     json_data = resp.json()
-    status_code = json_data.get('status')
+    error = error_check(request, json_data=json_data)
     mess = json_data.get('text')
-    if status_code == 200 or status_code == 205:
+    if not error:
         messages.success(request, mess)
-    elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request, session_info={})
-        messages.error(request, mess)
-    else:
-        messages.error(request, mess)
-
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': parent_url,}))
 
 
@@ -403,13 +362,8 @@ def upload_resource(request):
                          'No response from solid-pod-lg API')
         return render(request, 'pod_node/pod_node.html', context)
     json_data = resp.json()
-    status_code = json_data.get('status')
+    error = error_check(request, json_data=json_data)
     mess = json_data.get('text')
-    if status_code == 200 or status_code == 201:
+    if not error:
         messages.success(request, mess)
-    elif status_code == 500 and mess == 'Error 500: No session found.':
-        _reset_session(request, session_info={})
-        messages.error(request, mess)
-    else:
-        messages.error(request, mess)
     return HttpResponseRedirect(reverse('pod_node:view_resource') + '?' + urlencode({'url': source_url,}))
