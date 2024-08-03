@@ -218,7 +218,7 @@ def preview_resource(request):
     resource_url = request.GET.get("url").strip()
     payload = {
         'sessionId': request.session.get('node_sessionId'),
-        'resourceURL': resource_url +'aaa'
+        'resourceURL': resource_url
     }
     download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
     try:
