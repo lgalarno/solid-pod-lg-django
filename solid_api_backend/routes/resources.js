@@ -138,6 +138,31 @@ router.post("/upload", async (req, res, next) => {
 });
 
 
+
+router.post("/createcontainer", async (req, res, next) => {
+    console.log('createcontainer')
+
+    let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content
+    if (obj.error === false) {
+        try {
+            const myDataset = await getSolidDataset(
+                obj.resourceURL,
+                { fetch: obj.session.fetch }  // fetch function from authenticated session
+            );
+
+            
+            obj.status = 201
+            obj.text = `${new_resourceURL} created`
+        } catch (err) {
+            obj.status = 500
+            obj.error = true
+            obj.text = `Error 500: ${err.statusText}`
+        }
+    }
+    delete obj.session
+    return res.send(obj);
+});
+
 router.post("/delete", async (req, res, next) => {
     console.log('delete')
     let obj = await initFetch(req.body)  // obj contains session, resourceURL, response status, response content

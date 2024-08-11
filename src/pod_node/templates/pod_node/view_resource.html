@@ -4,7 +4,7 @@
 
 {% block content %}
     {% include 'pod_node/partials/oidc_login_status.html' %}
-{#    {% include 'pod_node/partials/nodjs_menu.html' %}#}
+    {% include 'pod_node/partials/nodjs_menu.html' %}
 
     <br>
     <div class="row justify-content-md-center ">
@@ -12,10 +12,14 @@
              <div class="bg-white p-3 mb-2 rounded shadow-sm">
                 <a href="{% url 'pod_node:pod_node' %}" style="float: right;"> Back to select another resource/pod</a>
                 <h3>Solid pod : {{ pod }} </h3>
-                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>
-                <div id="ttl-content" {% if folder_data %}class="collapse" {% else%} class="collapse.show"{% endif%}>
+{#                <h4>ttl content &nbsp;<small><button class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#ttl-content">show/hide&#9660&#9650</button></small></h4>#}
+{#                <div id="ttl-content" {% if folder_data %}class="collapse" {% else%} class="collapse.show"{% endif%}>#}
+{#                    <pre class="bg-light">{{ resource_content }}</pre>#}
+{#                </div>#}
+                <details id="ttl-content" >
+                    <summary style="font-size: 1.5rem; margin-top: 0; margin-bottom: .5rem; font-weight: 500; line-height: 1.2;">
                     <pre class="bg-light">{{ resource_content }}</pre>
-                </div>
+                </details>
                 <hr>
              </div>
         </div>
