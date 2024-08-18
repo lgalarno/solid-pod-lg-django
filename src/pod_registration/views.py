@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, reverse, get_object_or_404, HttpResponseRedirect, HttpResponse, redirect
+from django.utils.http import urlencode
 from django.views.decorators.http import require_http_methods
 
 from pathlib import Path
@@ -14,6 +15,7 @@ from .models import SolidPod, StateSession
 # Create your views here.
 _MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 _MEDIA = Path(settings.MEDIA_URL)
+
 
 def dashboard(request):
     # sessions = StateSession.objects.filter(user=request.user)  # contains WebID
@@ -80,19 +82,21 @@ def view_resource(request, pk):
                 folder_data = api.read_folder_offline(url=resource_url, ttl=resource_content, pod=pod.url)
                 if folder_data:  # if folder_data is a container
                     for f in folder_data.folders:
+                        urlencoded = urlencode({'url': f.url})
                         f.view_url = reverse('pod_registration:view_resource',
-                                             kwargs={'pk': pk}) + f'?url={f.url}'
+                                             kwargs={'pk': pk}) + f'?{urlencoded}'
                         f.del_url = reverse('pod_registration:delete_resource',
-                                            kwargs={'pk': pk}) + f'?url={f.url}'
+                                            kwargs={'pk': pk}) + f'?{urlencoded}'
                     for f in folder_data.files:
+                        urlencoded = urlencode({'url': f.url})
                         f.view_url = reverse('pod_registration:view_resource',
-                                             kwargs={'pk': pk}) + f'?url={f.url}'
+                                             kwargs={'pk': pk}) + f'?{urlencoded}'
                         f.del_url = reverse('pod_registration:delete_resource',
-                                            kwargs={'pk': pk}) + f'?url={f.url}'
+                                            kwargs={'pk': pk}) + f'?{urlencoded}'
                         f.download_url = reverse('pod_registration:download_resource',
-                                                 kwargs={'pk': pk}) + f'?url={f.url}'
+                                                 kwargs={'pk': pk}) + f'?{urlencoded}'
                         f.preview_url = reverse('pod_registration:preview_resource',
-                                                kwargs={'pk': pk}) + f'?url={f.url}'
+                                                kwargs={'pk': pk}) + f'?{urlencoded}'
                     context['folder_data'] = folder_data
 
             else:  # content_type.startswith('application'):
@@ -271,7 +275,7 @@ def preview_resource(request, pk):
     elif resp.status_code != 200:
         messages.error(request, f"Error: {resp.status_code} {resp.text}")
     else:  # resp.status_code == 200
-        fn = Path(resource_url).name
+        fn = Path(resource_url).name.replace("%20", " ")
         resp_headers = resp.headers
         content_type = resp_headers.get('content-type')
         file = resp.content
@@ -325,4 +329,3 @@ def preview_resource(request, pk):
     response = HttpResponse()
     response["HX-Redirect"] = f'{read_url}?url={parent_url}'
     return response
-
