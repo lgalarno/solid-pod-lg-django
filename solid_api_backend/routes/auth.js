@@ -18,9 +18,10 @@ router.get("/login", async (req, res, next) => {
     // 1. Create a new Session
     console.log('user')
     const session = new Session({ keepAlive: false }); // Turn off periodic refresh of the Session in background
-    req.session.sessionId = session.info.sessionId
     const CLIENTNAME = process.env.CLIENTNAME;
     const oidcIssuer =  req.query.issuer_url
+
+    req.session.sessionId = session.info.sessionId
     console.log('oidcIssuer: ' + oidcIssuer)
     async function redirectToSolidIdentityProvider(url) {
       // Since we use Express in this example, we can call `res.redirect` to send the user to the

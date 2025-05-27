@@ -15,6 +15,8 @@ from connector.utillities.minis import get_parent_url
 
 # Create your views here.
 
+_API_CALLBACK_URI = settings.API_CALLBACK_URI
+_NODE_API_BROWSER_URL = settings.NODE_API_BROWSER_URL
 _NODE_API_URL = settings.NODE_API_URL
 _MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 _MEDIA = Path(settings.MEDIA_URL)
@@ -79,11 +81,15 @@ def test(request):
 
 
 def sessions(request):
-    url = 'http://localhost:3030/solid-pod-lg/sessions'
-    r = httpx.get(url)
+    print('sessions')
+    print('----------------------------------------------------')
+    node_api_url = f'{_NODE_API_URL}admin/sessions/'
+    # url = 'http://localhost:3030/solid-pod-lg/sessions'
+    node_api_url = "http://solid_node_api:3030/api/admin/sessions"
+    r = httpx.get(node_api_url)
     # r = httpx.get(url)
     print(r.status_code)
-    return HttpResponse("Hello World")
+    return HttpResponse(f"Session: {r.text}")
 
 
 def pod_node(request):
@@ -120,8 +126,11 @@ def login(request):
         context['issuer_url'] = issuer_url
         if issuer_url[-1] != '/':
             issuer_url = issuer_url + '/'
-    login_url = f'{_NODE_API_URL}auth/login/?issuer_url={issuer_url}'
-    print(login_url)
+    payload = {
+        'issuer_url': issuer_url,
+        'callback_uri': _API_CALLBACK_URI,
+    }
+    login_url = f'{_NODE_API_BROWSER_URL}auth/login/?' + urlencode(payload)
     return HttpResponseRedirect(login_url)
 
 
@@ -176,12 +185,14 @@ def view_resource(request):
         'resourceURL': resource_url
     }
     is_dataset_url = f'{_NODE_API_URL}resources/dataset/'
-    try:
-        resp = httpx.post(is_dataset_url, json=payload)
-    except:
-        messages.error(request,
-                         'No response from solid-pod-lg API')
-        return redirect('pod_node:pod_node')
+    print(is_dataset_url)
+    resp = httpx.post(is_dataset_url, json=payload)
+    # try:
+    #     resp = httpx.post(is_dataset_url, json=payload)
+    # except:
+    #     messages.error(request,
+    #                      'No response from solid-pod-lg API')
+    #     return redirect('pod_node:pod_node')
 
     json_data = resp.json()
     error = error_check(request, json_data=json_data)
@@ -294,7 +305,8 @@ def download_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    download_url = f'{_NODE_API_URL}resources/download/?' + urlencode(payload)
+    # use _NODE_API_BROWSER_URL because response
+    download_url = f'{_NODE_API_BROWSER_URL}resources/download/?' + urlencode(payload)
     return HttpResponseRedirect(download_url)
 
 

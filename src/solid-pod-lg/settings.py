@@ -12,11 +12,24 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from dotenv import dotenv_values
+import os
+
+# def get_env_vars(d):
+#     config = dotenv_values(d)
+#     if config:
+#         return config
+#     else:
+#         return os.environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-config = dotenv_values(BASE_DIR / '.env')
+# config = get_env_vars(BASE_DIR / '.env')
+
+if os.environ.get('DJANGO_ENV') == 'production':
+    config = os.environ
+else:
+    config = dotenv_values(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -171,8 +184,10 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # APP variables
 ######################################################################
 
+API_CALLBACK_URI = config['API_CALLBACK_URI']
 OID_CALLBACK_URI = config["OID_CALLBACK_URI"]
 CLIENT_NAME = config["CLIENT_NAME"]
 CLIENT_CONTACT = config["CLIENT_CONTACT"]
 CLIENT_URL = config["CLIENT_URL"]
 NODE_API_URL = config.get("NODE_API_URL")
+NODE_API_BROWSER_URL = config.get("NODE_API_BROWSER_URL")
