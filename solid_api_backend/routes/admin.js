@@ -32,4 +32,10 @@ router.get("/sessions", async (req, res, next) => {
     });
 
 
+router.get("/alive", async (req, res, next) => {
+    let obj = {}
+    obj.status = 200
+    return res.send(obj);
+    });
+
 module.exports = router;

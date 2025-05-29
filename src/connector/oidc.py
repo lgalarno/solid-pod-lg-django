@@ -22,7 +22,7 @@ from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 _OID_CALLBACK_URI = settings.OID_CALLBACK_URI
 _CLIENT_NAME = settings.CLIENT_NAME
 _CLIENT_CONTACT = settings.CLIENT_CONTACT
-_CLIENT_URL = settings.CLIENT_URL
+# _CLIENT_URL = settings.CLIENT_URL
 
 
 def decode_access_token(access_token):

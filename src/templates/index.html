@@ -18,5 +18,9 @@
     </div>
 
 {#    {% include 'pod_session/partials/issuer_form.html' %}#}
-    {% include 'pod_node/partials/issuer_form.html' %}
+    {% if node_api_alive %}
+        {% include 'pod_node/partials/issuer_form.html' %}
+    {% else %}
+        {% include 'pod_session/partials/issuer_form.html' %}
+    {% endif %}
 {% endblock %}

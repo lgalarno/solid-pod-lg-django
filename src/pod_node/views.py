@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, HttpResponse, redirect, HttpResponseRedirect, reverse
 from django.utils.http import urlencode
 
@@ -23,39 +23,53 @@ _MEDIA = Path(settings.MEDIA_URL)
 
 
 def test(request):
-    sessionId = request.session.get('node_sessionId')
-    webId = request.session.get('node_webId')
-    context = {
-        'title': 'test-nodeAPI',
-        'webId': webId
-    }
-    resource_url = 'https://solid.insightdatalg.ca/lgalarno/'
-    payload = {
-        'sessionId': sessionId,
-        'resourceURL': resource_url
-    }
-    #
-    node_api_url = f'{_NODE_API_URL}resources/getpodurl/'
+    node_api_url = f'{_NODE_API_URL}admin/alive/'
     print(node_api_url)
-    r = httpx.post(node_api_url, json=payload)
-    json_data = r.json()
+    resp = httpx.get(node_api_url)  # check id node api is alive
+    print(resp.status_code)
+    json_data = resp.json()
     print(json_data)
-    folder_data = get_folder_content(data=json_data.get('folder_content'), url=resource_url)
-    if folder_data:  # if folder_data is a container
-        print('folders')
-        for f in folder_data.folders:
-            print(f.name)
-        print('files')
-        for f in folder_data.files:  # preview, download and delete liks
-            print(f.name)
-        context['folder_data'] = folder_data
-    if r.status_code == 200:
-        resource_content = json_data.get('resource_content')
-        context['resource_content'] = resource_content
-
-    elif r.status_code == 500:
-        messages.error(request,
-                       json_data.get('error'))
+    return JsonResponse(json_data, safe=False)
+    # try:
+    #     resp = httpx.post(node_api_url, json=payload)  # refresh session info and check id node api is alive
+    #     json_data = resp.json()
+    # except:
+    #     messages.error(request,
+    #                    'No response from solid-pod-lg API')
+    # sessionId = request.session.get('node_sessionId')
+    # webId = request.session.get('node_webId')
+    # context = {
+    #     'title': 'test-nodeAPI',
+    #     'webId': webId
+    # }
+    # resource_url = 'https://solid.insightdatalg.ca/lgalarno/'
+    # payload = {
+    #     'sessionId': sessionId,
+    #     'resourceURL': resource_url
+    # }
+    # #
+    # node_api_url = f'{_NODE_API_URL}resources/getpodurl/'
+    # print(node_api_url)
+    # r = httpx.post(node_api_url, json=payload)
+    # json_data = r.json()
+    # print(json_data)
+    # folder_data = get_folder_content(data=json_data.get('folder_content'), url=resource_url)
+    # if folder_data:  # if folder_data is a container
+    #     print('folders')
+    #     for f in folder_data.folders:
+    #         print(f.name)
+    #     print('files')
+    #     for f in folder_data.files:  # preview, download and delete liks
+    #         print(f.name)
+    #     context['folder_data'] = folder_data
+    # if r.status_code == 200:
+    #     resource_content = json_data.get('resource_content')
+    #     context['resource_content'] = resource_content
+    #
+    # elif r.status_code == 500:
+    #     messages.error(request,
+    #                    json_data.get('error'))
+    #
     # try:
     #     r = httpx.post(node_api_url, json=payload)
     #     json_data = r.json()
@@ -77,15 +91,27 @@ def test(request):
     # except:
     #     messages.error(request,
     #                      'No response from solid-pod-lg API')
-    return render(request, 'pod_node/pod_node.html', context)
+    # return render(request, 'pod_node/pod_node.html', context)
+
+
+# def alive(request):
+#     context = {
+#     }
+#     payload = {
+#         'sessionId': request.session.get('node_sessionId'),
+#         'resourceURL': resource_url
+#     }
+#     is_dataset_url = f'{_NODE_API_URL}resources/dataset/'
+#     resp = httpx.post(is_dataset_url, json=payload)
 
 
 def sessions(request):
     print('sessions')
     print('----------------------------------------------------')
     node_api_url = f'{_NODE_API_URL}admin/sessions/'
+    print(node_api_url)
     # url = 'http://localhost:3030/solid-pod-lg/sessions'
-    node_api_url = "http://solid_node_api:3030/api/admin/sessions"
+    # node_api_url = "http://solid_node_api:3030/api/admin/sessions"
     r = httpx.get(node_api_url)
     # r = httpx.get(url)
     print(r.status_code)
@@ -185,7 +211,6 @@ def view_resource(request):
         'resourceURL': resource_url
     }
     is_dataset_url = f'{_NODE_API_URL}resources/dataset/'
-    print(is_dataset_url)
     resp = httpx.post(is_dataset_url, json=payload)
     # try:
     #     resp = httpx.post(is_dataset_url, json=payload)

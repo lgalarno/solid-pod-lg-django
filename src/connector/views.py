@@ -22,9 +22,9 @@ from pod_registration.models import StateSession, OpenIDprovider
 
 
 _OID_CALLBACK_URI = settings.OID_CALLBACK_URI
-_CLIENT_NAME = settings.CLIENT_NAME
-_CLIENT_CONTACT = settings.CLIENT_CONTACT
-_CLIENT_URL = settings.CLIENT_URL
+# _CLIENT_NAME = settings.CLIENT_NAME
+# _CLIENT_CONTACT = settings.CLIENT_CONTACT
+# _CLIENT_URL = settings.CLIENT_URL
 
 
 # Create your views here.

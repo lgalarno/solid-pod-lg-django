@@ -59,6 +59,7 @@ def resource_form(request):
     return render(request, 'pod_session/resource_form.html', context)
 
 
+#TODO update pod sessions for when the node.js api is down
 def resource_view(request):
     resource_content = None
     state_session = request.session.get('state_session')

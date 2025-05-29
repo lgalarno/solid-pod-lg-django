@@ -72,18 +72,19 @@ def create_pod(request):
             request.session['pod_form'] = True
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        'pod_registration': pods,
+        'pods': pods,
         'form_pod': form,
     }
     return render(request, 'pod_registration/partials/pod-form.html', context)
 
 
+# TODO when a pod is deleted, it returns an empty list of pods
 def delete_pod(request, pk):
     p = get_object_or_404(SolidPod, id=pk)
     p.delete()
     pods = SolidPod.objects.filter(user=request.user)
     context = {
-        'pod_registration': pods,
+        'pods': pods,
         'form': None,
     }
     return render(request, 'pod_registration/partials/pods-list.html', context)

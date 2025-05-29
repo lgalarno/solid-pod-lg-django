@@ -19,9 +19,10 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 from .sitemaps import StaticViewSitemap
+from . import views
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -29,8 +30,9 @@ sitemaps = {
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", TemplateView.as_view(template_name='index.html'), name="home"),
+    #path("", TemplateView.as_view(template_name='index.html'), name="home"),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),),
+    path('', views.home, name="home"),
     # TODO about page
     path('about/', TemplateView.as_view(template_name="about.html"), name="about"),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),

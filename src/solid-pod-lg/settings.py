@@ -181,6 +181,19 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 ######################################################################
+# CACHES
+######################################################################
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config["REDIS_URL"],
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+######################################################################
 # APP variables
 ######################################################################
 
@@ -188,6 +201,6 @@ API_CALLBACK_URI = config['API_CALLBACK_URI']
 OID_CALLBACK_URI = config["OID_CALLBACK_URI"]
 CLIENT_NAME = config["CLIENT_NAME"]
 CLIENT_CONTACT = config["CLIENT_CONTACT"]
-CLIENT_URL = config["CLIENT_URL"]
+# CLIENT_URL = config["CLIENT_URL"]
 NODE_API_URL = config.get("NODE_API_URL")
 NODE_API_BROWSER_URL = config.get("NODE_API_BROWSER_URL")
