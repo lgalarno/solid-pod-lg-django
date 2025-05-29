@@ -5,7 +5,9 @@
 
 {% block content %}
     {% include 'pod_node/partials/oidc_login_status.html' %}
-    {% include 'pod_node/partials/nodjs_menu.html' %}
+    {% if  request.user.is_staff %}
+        {% include 'pod_node/partials/nodjs_menu.html' %}
+    {% endif %}
     {% if request.session.node_isLoggedIn %}
         <div class="row justify-content-md-center">
             <div class="col col-sm-10 p-3 mb-2">

@@ -4,8 +4,9 @@
 
 {% block content %}
     {% include 'pod_node/partials/oidc_login_status.html' %}
-    {% include 'pod_node/partials/nodjs_menu.html' %}
-
+    {% if  request.user.is_staff %}
+        {% include 'pod_node/partials/nodjs_menu.html' %}
+    {% endif %}
     <br>
     <div class="row justify-content-md-center ">
         <div class="col-md-10 ">
