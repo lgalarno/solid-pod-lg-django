@@ -13,10 +13,10 @@ def home(request):
         if resp.status_code == 200:
             alive = True
         else:
-            messages.warning(request, f"*** Connection to the node.js api was denied ***")
+            messages.warning(request, f"*** Connection to the node.js api at {node_api_url} was denied ***")
             alive = False
     except:
-        messages.warning(request, f"*** The node.js api is down ***")
+        messages.warning(request, f"*** The node.js api is down at {node_api_url} ***")
         alive = False
 
     context = {

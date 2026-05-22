@@ -14,19 +14,14 @@ from pathlib import Path
 from dotenv import dotenv_values
 import os
 
-# def get_env_vars(d):
-#     config = dotenv_values(d)
-#     if config:
-#         return config
-#     else:
-#         return os.environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # config = get_env_vars(BASE_DIR / '.env')
-
-if os.environ.get('DJANGO_ENV') == 'production':
+production = os.environ.get('MODE_ENV') == 'production'
+print(production)
+if production:
     config = os.environ
 else:
     config = dotenv_values(BASE_DIR / '.env')
@@ -196,11 +191,22 @@ CACHES = {
 ######################################################################
 # APP variables
 ######################################################################
+APP_PORT = config['PORT_HTTP']
+CALLBACK_URI = config['CALLBACK_URI']
 
-API_CALLBACK_URI = config['API_CALLBACK_URI']
-OID_CALLBACK_URI = config["OID_CALLBACK_URI"]
+# For oidc login call back in Django app.
+API_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/pod-node/login-callback"  # when using the node api
+OID_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/connector/callback"  # when using Django
+
+NODE_API_URL = config['NODE_API_URL']
+IN_DOCKER = config['IN_DOCKER'] == 'True'
+
+# For NODE_API access from outside docker compose in HTTP responses
+if IN_DOCKER:
+    NODE_PORT = config['NODE_PORT']
+    NODE_API_BROWSER_URL = f'http://localhost:{NODE_PORT}/api/'
+else:
+    NODE_API_BROWSER_URL = NODE_API_URL
+
 CLIENT_NAME = config["CLIENT_NAME"]
 CLIENT_CONTACT = config["CLIENT_CONTACT"]
-# CLIENT_URL = config["CLIENT_URL"]
-NODE_API_URL = config.get("NODE_API_URL")
-NODE_API_BROWSER_URL = config.get("NODE_API_BROWSER_URL")

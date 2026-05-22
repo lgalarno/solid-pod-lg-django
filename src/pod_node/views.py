@@ -14,9 +14,8 @@ from connector.utillities.minis import get_parent_url
 
 
 # Create your views here.
-
-_API_CALLBACK_URI = settings.API_CALLBACK_URI
 _NODE_API_BROWSER_URL = settings.NODE_API_BROWSER_URL
+_API_CALLBACK_URI = settings.API_CALLBACK_URI
 _NODE_API_URL = settings.NODE_API_URL
 _MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 _MEDIA = Path(settings.MEDIA_URL)
@@ -211,13 +210,13 @@ def view_resource(request):
         'resourceURL': resource_url
     }
     is_dataset_url = f'{_NODE_API_URL}resources/dataset/'
-    resp = httpx.post(is_dataset_url, json=payload)
-    # try:
-    #     resp = httpx.post(is_dataset_url, json=payload)
-    # except:
-    #     messages.error(request,
-    #                      'No response from solid-pod-lg API')
-    #     return redirect('pod_node:pod_node')
+    #resp = httpx.post(is_dataset_url, json=payload)
+    try:
+        resp = httpx.post(is_dataset_url, json=payload)
+    except:
+        messages.error(request,
+                         'No response from solid-pod-lg API')
+        return redirect('pod_node:pod_node')
 
     json_data = resp.json()
     error = error_check(request, json_data=json_data)
@@ -250,6 +249,7 @@ def view_resource(request):
     return render(request, 'pod_node/view_resource.html', context)
 
 
+# TODO Unsupported file type text in the preview pane
 def preview_resource(request):
     resource_url = request.GET.get("url").strip()
     payload = {
@@ -287,7 +287,7 @@ def preview_resource(request):
                 }
                 return render(request, 'pod_node/partials/text_file.html', context)
             except:
-                messages.warning(request, f'Unsupported file type: {content_type}')
+                messages.warning(request, f'Unsupported file type to preview: {content_type}')
 
         elif 'image' in content_type:
             long_fn = _MEDIA_ROOT / fn
@@ -314,7 +314,7 @@ def preview_resource(request):
             }
             return render(request, 'pod_node/partials/audio_file.html', context)
         else:
-            messages.warning(request, f'Unsupported file type: {content_type}')
+            messages.warning(request, f'Unsupported file type to preview: {content_type}')
     else:
         json_data = resp.json()
         error = error_check(request, json_data=json_data)
@@ -330,7 +330,6 @@ def download_resource(request):
         'sessionId': request.session.get('node_sessionId'),
         'resourceURL': resource_url
     }
-    # use _NODE_API_BROWSER_URL because response
     download_url = f'{_NODE_API_BROWSER_URL}resources/download/?' + urlencode(payload)
     return HttpResponseRedirect(download_url)
 
