@@ -112,7 +112,3 @@ venv.bak/
 /media/
 /node_modules/
 /autres
-
-# without Docker
-Dockerfile
-entrypoint.sh

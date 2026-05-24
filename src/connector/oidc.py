@@ -110,7 +110,6 @@ def client_registration(**kwargs):
     else:
         endpoint = kwargs.get('registration_endpoint')
         state = kwargs.get('state')
-
     # 3) Client registration
     # https://pyoidc.readthedocs.io/en/latest/examples/rp.html#client-registration
     args = {

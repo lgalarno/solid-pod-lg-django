@@ -19,9 +19,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # config = get_env_vars(BASE_DIR / '.env')
-production = os.environ.get('MODE_ENV') == 'production'
-print(production)
-if production:
+in_docker = os.environ.get('IN_DOCKER') == "1"  # 1 == True
+
+if in_docker:
     config = os.environ
 else:
     config = dotenv_values(BASE_DIR / '.env')
@@ -191,18 +191,17 @@ CACHES = {
 ######################################################################
 # APP variables
 ######################################################################
-APP_PORT = config.get('PORT_HTTP')
-CALLBACK_URI = config.get('CALLBACK_URI')
+APP_PORT = config.get('PORT_HTTP')  # 8000 in dev
+CALLBACK_URI = config.get('CALLBACK_URI')  # localhost in dev, domain name in prod
 
 # For oidc login call back in Django app.
 API_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/pod-node/login-callback"  # when using the node api
 OID_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/connector/callback"  # when using Django
 
 NODE_API_URL = config.get('NODE_API_URL')
-IN_DOCKER = config.get('IN_DOCKER')
 
 # For NODE_API access from outside docker compose in HTTP responses
-if IN_DOCKER:
+if in_docker:
     NODE_PORT = config.get('NODE_PORT')
     NODE_API_BROWSER_URL = f'http://localhost:{NODE_PORT}/api/'
 else:
