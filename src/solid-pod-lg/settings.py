@@ -181,7 +181,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": config["REDIS_URL"],
+        "LOCATION": config.get("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -191,22 +191,22 @@ CACHES = {
 ######################################################################
 # APP variables
 ######################################################################
-APP_PORT = config['PORT_HTTP']
-CALLBACK_URI = config['CALLBACK_URI']
+APP_PORT = config.get('PORT_HTTP')
+CALLBACK_URI = config.get('CALLBACK_URI')
 
 # For oidc login call back in Django app.
 API_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/pod-node/login-callback"  # when using the node api
 OID_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/connector/callback"  # when using Django
 
-NODE_API_URL = config['NODE_API_URL']
-IN_DOCKER = config['IN_DOCKER'] == 'True'
+NODE_API_URL = config.get('NODE_API_URL')
+IN_DOCKER = config.get('IN_DOCKER')
 
 # For NODE_API access from outside docker compose in HTTP responses
 if IN_DOCKER:
-    NODE_PORT = config['NODE_PORT']
+    NODE_PORT = config.get('NODE_PORT')
     NODE_API_BROWSER_URL = f'http://localhost:{NODE_PORT}/api/'
 else:
     NODE_API_BROWSER_URL = NODE_API_URL
 
-CLIENT_NAME = config["CLIENT_NAME"]
-CLIENT_CONTACT = config["CLIENT_CONTACT"]
+CLIENT_NAME = config.get("CLIENT_NAME")
+CLIENT_CONTACT = config.get("CLIENT_CONTACT")

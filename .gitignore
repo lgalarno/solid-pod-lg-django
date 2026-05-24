@@ -110,6 +110,8 @@ venv.bak/
 .mypy_cache/
 
 /media/
+/node_modules/
+/autres
 
 # without Docker
 Dockerfile
