@@ -190,17 +190,28 @@ CACHES = {
 
 ######################################################################
 # APP variables
+# API_CALLBACK_URI = "http://solid-pod-lg.insightdatalg.ca/pod-node/login-callback"
+# OID_CALLBACK_URI="https://solid-pod-lg.insightdatalg.ca/connector/callback"
+#
+# NODE_API_URL='https://solid-pod-lg.insightdatalg.ca/api/'
+# NODE_API_BROWSER_URL='https://solid-pod-lg.insightdatalg.ca/api/'
 ######################################################################
-APP_PORT = config.get('PORT_HTTP')  # 8000 in dev
-CALLBACK_URI = config.get('CALLBACK_URI')  # localhost in dev, domain name in prod
 
+######################################################################
+# APP_PORT = config.get('PORT_HTTP')  # 8000 in dev
+# CALLBACK_URI = config.get('CALLBACK_URI')  # localhost in dev, domain name in prod
 # For oidc login call back in Django app.
-API_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/pod-node/login-callback"  # when using the node api
-OID_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/connector/callback"  # when using Django
+# API_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/pod-node/login-callback"  # when using the node api
+# OID_CALLBACK_URI = f"http://{CALLBACK_URI}:{APP_PORT}/connector/callback"  # when using Django
+#NODE_API_URL = config.get('NODE_API_URL')
+######################################################################
 
-NODE_API_URL = config.get('NODE_API_URL')
+API_CALLBACK_URI = config.get('API_CALLBACK_URI')
+OID_CALLBACK_URI = config.get('OID_CALLBACK_URI')
 
-# For NODE_API access from outside docker compose in HTTP responses
+NODE_API_URL = config.get('NODE_API_URL')  # for requests using the node api
+
+# to allow login through browser with the node api; it may differ if in Docker compose for instance
 if in_docker:
     NODE_PORT = config.get('NODE_PORT')
     NODE_API_BROWSER_URL = f'http://localhost:{NODE_PORT}/api/'
