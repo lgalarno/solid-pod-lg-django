@@ -36,6 +36,7 @@ SECRET_KEY = config["DJANGO_SECRET_KEY"]
 DEBUG = str(config["DEBUG"]) == "1"  # 1 == True
 
 ALLOWED_HOSTS = config["ALLOWED_HOSTS"].split(',') if config["ALLOWED_HOSTS"] else []
+CSRF_TRUSTED_ORIGINS = config["CSRF_TRUSTED_ORIGINS"].split(',') if config["CSRF_TRUSTED_ORIGINS"] else []
 
 # Application definition
 
